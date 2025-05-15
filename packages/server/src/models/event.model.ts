@@ -11,8 +11,16 @@ export namespace EventModel {
                         email: true,
                     },
                 },
-                _count: {
-                    select: { registrations: true },
+                registrations: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true, 
+                            }
+                        }
+                    }
                 },
             },
         });

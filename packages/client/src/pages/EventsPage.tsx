@@ -88,7 +88,7 @@ const EventsPage: React.FC = () => {
                                         </div>
                                         <div className="mb-3">
                                             <i className="bi bi-people me-1"></i>
-                                            <strong>Registrations:</strong> {event._count.registrations}
+                                            <strong>Registrations:</strong> {event.registrations.length}
                                         </div>
                                         <div className="d-flex gap-2">
                                             <Button variant="primary" href={`/events/${event.id}`}>View Details</Button>

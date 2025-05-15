@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { UserBaseSchema } from "./users.dto";
 
 // Common Event fields
 export const EventBaseSchema = z.object({
@@ -11,12 +12,33 @@ export const EventBaseSchema = z.object({
     updatedAt: z.date(),
 });
 
+const RegistrationsExtensionSchema = z.object({
+    registrations: z.object({
+        id: z.string(),
+        user: UserBaseSchema.pick({
+            id: true,
+            name: true,
+            email: true
+        }),
+    }).array()
+})
+
+const OrganizerExtensionSchema = z.object({
+    organizer: z.object({
+        id: z.string(),
+        name: z.string(),
+        email: z.string().email(),
+    })
+});
+
+const EventWithDetailsSchema = EventBaseSchema.merge(RegistrationsExtensionSchema).merge(OrganizerExtensionSchema);
+
 // Get all events response
-export const GetAllEventsResponseSchema = z.array(EventBaseSchema);
+export const GetAllEventsResponseSchema = z.array(EventWithDetailsSchema);
 export type GetAllEventsResponse = z.infer<typeof GetAllEventsResponseSchema>;
 
 // Get event by ID response
-export const GetEventByIdResponseSchema = EventBaseSchema;
+export const GetEventByIdResponseSchema = EventWithDetailsSchema;
 export type GetEventByIdResponse = z.infer<typeof GetEventByIdResponseSchema>;
 
 // Create event request
