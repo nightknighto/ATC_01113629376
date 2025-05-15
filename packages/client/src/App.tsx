@@ -5,6 +5,7 @@ import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import AdminPage from './pages/AdminPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Navbar, Nav, Container, Button, NavDropdown } from 'react-bootstrap';
 
@@ -18,6 +19,9 @@ const Navigation = () => {
                 <Navbar.Collapse id="main-navbar-nav">
                     <Nav className="ms-auto align-items-lg-center gap-lg-3">
                         <Nav.Link as={Link} to="/events">Events</Nav.Link>
+                        {user?.role === "admin" && (
+                            <Nav.Link as={Link} to="/admin">Admin</Nav.Link>
+                        )}
                         {user ? (
                             <>
                                 <Navbar.Text className="fw-semibold">Hello, {user.name}</Navbar.Text>
@@ -49,6 +53,7 @@ function AppContent() {
                     <Route path="/events/:id" element={<EventDetailPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/admin" element={<AdminPage />} />
                     <Route path="/events/create" element={<div className="container mx-auto p-4">Create event page will be implemented</div>} />
                     <Route path="/events/:id/edit" element={<div className="container mx-auto p-4">Edit event page will be implemented</div>} />
                     <Route path="/profile" element={<div className="container mx-auto p-4">User profile page will be implemented</div>} />

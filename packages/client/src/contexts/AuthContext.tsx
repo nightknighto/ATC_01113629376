@@ -1,11 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authAPI } from '../services/api';
+import { GetUserByIdResponse } from '@events-platform/shared';
 
-interface User {
-    id: string;
-    name: string;
-    email: string;
-}
+type User = GetUserByIdResponse
 
 interface AuthContextType {
     user: User | null;
