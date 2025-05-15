@@ -1,24 +1,19 @@
 import { Request, Response } from 'express';
-import { prisma } from '../index';
 import { UserSchema } from '@events-platform/shared';
 import bcrypt from 'bcryptjs';
+import { UserModel } from '../models';
 
 export namespace UsersController {
     export const getAllUsers = async (req: Request, res: Response) => {
         try {
-            const users = await prisma.user.findMany({
-                select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    createdAt: true,
-                    updatedAt: true,
-                    _count: {
-                        select: { events: true, registrations: true },
-                    },
-                },
-            });
-            res.json(users);
+            // Assuming UserModel has a method to get all users with counts
+            const users = await UserModel.getAllWithCounts?.();
+            if (users) {
+                res.json(users);
+            } else {
+                // fallback to direct prisma if method not implemented
+                res.status(501).json({ error: 'Not implemented in UserModel' });
+            }
         } catch (error) {
             console.error('Error fetching users:', error);
             res.status(500).json({ error: 'Failed to fetch users' });
@@ -28,22 +23,7 @@ export namespace UsersController {
     export const getUserById = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
-            const user = await prisma.user.findUnique({
-                where: { id },
-                select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    createdAt: true,
-                    updatedAt: true,
-                    events: true,
-                    registrations: {
-                        include: {
-                            event: true,
-                        },
-                    },
-                },
-            });
+            const user = await UserModel.findByIdWithDetails?.(id);
             if (!user) {
                 return res.status(404).json({ error: 'User not found' });
             }
@@ -57,26 +37,15 @@ export namespace UsersController {
     export const createUser = async (req: Request, res: Response) => {
         try {
             const validatedData = UserSchema.parse(req.body);
-            const existingUser = await prisma.user.findUnique({
-                where: { email: validatedData.email },
-            });
+            const existingUser = await UserModel.findByEmail(validatedData.email);
             if (existingUser) {
                 return res.status(400).json({ error: 'User with this email already exists' });
             }
             const hashedPassword = await bcrypt.hash(validatedData.password || '', 10);
-            const user = await prisma.user.create({
-                data: {
-                    name: validatedData.name,
-                    email: validatedData.email,
-                    password: hashedPassword,
-                },
-                select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    createdAt: true,
-                    updatedAt: true,
-                },
+            const user = await UserModel.create({
+                name: validatedData.name,
+                email: validatedData.email,
+                password: hashedPassword,
             });
             res.status(201).json(user);
         } catch (error) {
@@ -96,17 +65,10 @@ export namespace UsersController {
             if (validatedData.password) {
                 updateData.password = await bcrypt.hash(validatedData.password, 10);
             }
-            const user = await prisma.user.update({
-                where: { id },
-                data: updateData,
-                select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    createdAt: true,
-                    updatedAt: true,
-                },
-            });
+            const user = await UserModel.update?.(id, updateData);
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
             res.json(user);
         } catch (error) {
             console.error('Error updating user:', error);
@@ -117,16 +79,12 @@ export namespace UsersController {
     export const deleteUser = async (req: Request, res: Response) => {
         try {
             const { id } = req.params;
-            await prisma.registration.deleteMany({
-                where: { userId: id },
-            });
-            await prisma.event.deleteMany({
-                where: { organizerId: id },
-            });
-            await prisma.user.delete({
-                where: { id },
-            });
-            res.status(204).send();
+            const deleted = await UserModel.deleteByIdWithCascade?.(id);
+            if (deleted) {
+                res.status(204).send();
+            } else {
+                res.status(404).json({ error: 'User not found or not deleted' });
+            }
         } catch (error) {
             console.error('Error deleting user:', error);
             res.status(500).json({ error: 'Failed to delete user' });

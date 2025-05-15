@@ -1,39 +1,24 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { prisma } from '../index';
 import { UserSchema } from '@events-platform/shared';
 import { Request, Response } from 'express';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+import { UserModel } from '../models';
+import { JwtService } from '../services';
 
 export namespace AuthController {
     export const register = async (req: Request, res: Response) => {
         try {
             const validatedData = UserSchema.parse(req.body);
-            const existingUser = await prisma.user.findUnique({
-                where: { email: validatedData.email },
-            });
+            const existingUser = await UserModel.findByEmail(validatedData.email);
             if (existingUser) {
                 return res.status(400).json({ error: 'User with this email already exists' });
             }
             const hashedPassword = await bcrypt.hash(validatedData.password || '', 10);
-            const user = await prisma.user.create({
-                data: {
-                    name: validatedData.name,
-                    email: validatedData.email,
-                    password: hashedPassword,
-                },
-                select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                },
+            const user = await UserModel.create({
+                name: validatedData.name,
+                email: validatedData.email,
+                password: hashedPassword,
             });
-            const token = jwt.sign(
-                { userId: user.id, email: user.email },
-                JWT_SECRET,
-                { expiresIn: '1d' }
-            );
+            const token = JwtService.sign({ userId: user.id, email: user.email });
             res.status(201).json({ user, token });
         } catch (error) {
             console.error('Error registering user:', error);
@@ -44,9 +29,7 @@ export namespace AuthController {
     export const login = async (req: Request, res: Response) => {
         try {
             const { email, password } = req.body;
-            const user = await prisma.user.findUnique({
-                where: { email },
-            });
+            const user = await UserModel.findByEmail(email);
             if (!user) {
                 return res.status(401).json({ error: 'Invalid credentials' });
             }
@@ -54,11 +37,7 @@ export namespace AuthController {
             if (!isPasswordValid) {
                 return res.status(401).json({ error: 'Invalid credentials' });
             }
-            const token = jwt.sign(
-                { userId: user.id, email: user.email },
-                JWT_SECRET,
-                { expiresIn: '1d' }
-            );
+            const token = JwtService.sign({ userId: user.id, email: user.email });
             res.json({
                 user: {
                     id: user.id,
@@ -81,15 +60,8 @@ export namespace AuthController {
             }
             const token = authHeader.split(' ')[1];
             try {
-                const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
-                const user = await prisma.user.findUnique({
-                    where: { id: decoded.userId },
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                    },
-                });
+                const decoded = JwtService.verify<{ userId: string }>(token);
+                const user = await UserModel.findById(decoded.userId);
                 if (!user) {
                     return res.status(404).json({ error: 'User not found' });
                 }
