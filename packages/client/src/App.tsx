@@ -3,72 +3,36 @@ import { useState } from 'react';
 import './App.css';
 import EventsPage from './pages/EventsPage';
 import EventDetailPage from './pages/EventDetailPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Navbar, Nav, Container, Button, NavDropdown } from 'react-bootstrap';
 
 const Navigation = () => {
     const { user, logout } = useAuth();
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-
     return (
-        <nav className="bg-blue-600 text-white">
-            <div className="container mx-auto px-4 py-2 flex justify-between items-center">
-                <Link to="/" className="text-xl font-bold">Events Platform</Link>
-
-                {/* Mobile menu button */}
-                <button
-                    className="md:hidden focus:outline-none"
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-                    </svg>
-                </button>
-
-                {/* Desktop navigation */}
-                <div className="hidden md:flex space-x-4 items-center">
-                    <Link to="/events" className="hover:text-blue-200">Events</Link>
-                    {user ? (
-                        <>
-                            <span>Hello, {user.name}</span>
-                            <button
-                                onClick={logout}
-                                className="bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded"
-                            >
-                                Logout
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <Link to="/login" className="hover:text-blue-200">Login</Link>
-                            <Link to="/register" className="bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded">Sign Up</Link>
-                        </>
-                    )}
-                </div>
-            </div>
-
-            {/* Mobile menu */}
-            {isMenuOpen && (
-                <div className="md:hidden bg-blue-700 px-4 py-2">
-                    <Link to="/events" className="block py-2 hover:text-blue-200">Events</Link>
-                    {user ? (
-                        <>
-                            <span className="block py-2">Hello, {user.name}</span>
-                            <button
-                                onClick={logout}
-                                className="block w-full text-left py-2 hover:text-blue-200"
-                            >
-                                Logout
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <Link to="/login" className="block py-2 hover:text-blue-200">Login</Link>
-                            <Link to="/register" className="block py-2 hover:text-blue-200">Sign Up</Link>
-                        </>
-                    )}
-                </div>
-            )}
-        </nav>
+        <Navbar bg="primary" variant="dark" expand="lg" sticky="top" className="shadow">
+            <Container>
+                <Navbar.Brand as={Link} to="/" className="fw-bold fs-4">Events Platform</Navbar.Brand>
+                <Navbar.Toggle aria-controls="main-navbar-nav" />
+                <Navbar.Collapse id="main-navbar-nav">
+                    <Nav className="ms-auto align-items-lg-center gap-lg-3">
+                        <Nav.Link as={Link} to="/events">Events</Nav.Link>
+                        {user ? (
+                            <>
+                                <Navbar.Text className="fw-semibold">Hello, {user.name}</Navbar.Text>
+                                <Button variant="light" size="sm" className="ms-lg-2" onClick={logout}>Logout</Button>
+                            </>
+                        ) : (
+                            <>
+                                <Nav.Link as={Link} to="/login">Login</Nav.Link>
+                                <Button as="a" href="/register" variant="light" size="sm" className="ms-lg-2">Sign Up</Button>
+                            </>
+                        )}
+                    </Nav>
+                </Navbar.Collapse>
+            </Container>
+        </Navbar>
     );
 };
 
@@ -83,9 +47,8 @@ function AppContent() {
                     <Route path="/" element={<EventsPage />} />
                     <Route path="/events" element={<EventsPage />} />
                     <Route path="/events/:id" element={<EventDetailPage />} />
-                    {/* These routes will be implemented later */}
-                    <Route path="/login" element={<div className="container mx-auto p-4">Login page will be implemented</div>} />
-                    <Route path="/register" element={<div className="container mx-auto p-4">Register page will be implemented</div>} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
                     <Route path="/events/create" element={<div className="container mx-auto p-4">Create event page will be implemented</div>} />
                     <Route path="/events/:id/edit" element={<div className="container mx-auto p-4">Edit event page will be implemented</div>} />
                     <Route path="/profile" element={<div className="container mx-auto p-4">User profile page will be implemented</div>} />
