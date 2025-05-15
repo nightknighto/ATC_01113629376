@@ -1,14 +1,8 @@
 import { z } from "zod";
+import { UserWithPasswordBaseSchema } from "./users.dto";
 
 // Common Auth fields
-export const AuthUserSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    email: z.string().email(),
-    createdAt: z.string(),
-    updatedAt: z.string(),
-    password: z.string(),
-});
+export const AuthUserSchema = UserWithPasswordBaseSchema;
 
 // Register request
 export const RegisterRequestSchema = AuthUserSchema.pick({

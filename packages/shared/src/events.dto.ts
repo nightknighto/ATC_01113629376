@@ -5,10 +5,10 @@ export const EventBaseSchema = z.object({
     id: z.string(),
     title: z.string(),
     description: z.string(),
-    date: z.string(),
+    date: z.date(),
     location: z.string(),
-    createdAt: z.string(),
-    updatedAt: z.string(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
 });
 
 // Get all events response

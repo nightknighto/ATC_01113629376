@@ -5,8 +5,13 @@ export const UserBaseSchema = z.object({
     id: z.string(),
     name: z.string(),
     email: z.string().email(),
-    createdAt: z.string(),
-    updatedAt: z.string(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+    role: z.enum(['user', 'admin'])
+});
+
+export const UserWithPasswordBaseSchema = UserBaseSchema.extend({
+    password: z.string()
 });
 
 // Get all users response
@@ -18,11 +23,10 @@ export const GetUserByIdResponseSchema = UserBaseSchema;
 export type GetUserByIdResponse = z.infer<typeof GetUserByIdResponseSchema>;
 
 // Create user request
-export const CreateUserRequestSchema = UserBaseSchema.pick({
+export const CreateUserRequestSchema = UserWithPasswordBaseSchema.pick({
     name: true,
     email: true,
-}).extend({
-    password: z.string()
+    password: true
 })
 
 export type CreateUserRequest = z.infer<typeof CreateUserRequestSchema>;
