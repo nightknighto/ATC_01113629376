@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Container, Modal, Form, Alert, Spinner } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
-import { api, eventsAPI } from '../services/api';
+import { adminAPI, api, eventsAPI } from '../services/api';
 import {
     AdminGetAllEventsResponse,
     AdminCreateEventRequest,
@@ -11,11 +11,28 @@ import {
     AdminDeleteEventResponse,
 } from '@events-platform/shared';
 
-const defaultEvent: AdminCreateEventRequest = {
+// Modal state type uses string for date
+interface ModalEventState {
+    title: string;
+    description: string;
+    date: string; // 'YYYY-MM-DDTHH:mm'
+    location: string;
+}
+
+const defaultEvent: ModalEventState = {
     title: '',
     description: '',
-    date: new Date(),
+    date: '',
     location: '',
+};
+
+// Helper to format date string for datetime-local input
+const toDatetimeLocal = (date: string | Date) => {
+    if (!date) return '';
+    const d = typeof date === 'string' ? new Date(date) : date;
+    if (isNaN(d.getTime())) return '';
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
 const AdminPage: React.FC = () => {
@@ -34,9 +51,10 @@ const AdminPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showModal, setShowModal] = useState(false);
-    const [modalEvent, setModalEvent] = useState<AdminCreateEventRequest>(defaultEvent);
+    const [modalEvent, setModalEvent] = useState<ModalEventState>(defaultEvent);
     const [modalType, setModalType] = useState<'create' | 'edit'>('create');
     const [saving, setSaving] = useState(false);
+    const [editEventId, setEditEventId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchEvents();
@@ -65,9 +83,10 @@ const AdminPage: React.FC = () => {
         setModalEvent({
             title: event.title,
             description: event.description,
-            date: event.date,
+            date: toDatetimeLocal(event.date),
             location: event.location,
         });
+        setEditEventId(event.id); // Track the id of the event being edited
         setModalType('edit');
         setShowModal(true);
     };
@@ -76,7 +95,7 @@ const AdminPage: React.FC = () => {
         if (!id) return;
         if (!window.confirm('Are you sure you want to delete this event?')) return;
         try {
-            await eventsAPI.delete(id);
+            await adminAPI.deleteEvent(id);
             setEvents(events.filter(e => e.id !== id));
         } catch (err: any) {
             setError(err.message || 'Failed to delete event');
@@ -92,21 +111,21 @@ const AdminPage: React.FC = () => {
         setSaving(true);
         setError('');
         try {
+            // Convert modalEvent to DTO type (date as Date)
+            const eventData = {
+                ...modalEvent,
+                date: new Date(modalEvent.date),
+            };
             if (modalType === 'create') {
-                const data = await eventsAPI.create(modalEvent)
+                const data = await adminAPI.createEvent(eventData);
                 setEvents([...events, data]);
             } else {
-                const eventToUpdate = events.find(e =>
-                    e.title === modalEvent.title &&
-                    e.description === modalEvent.description &&
-                    e.date === modalEvent.date &&
-                    e.location === modalEvent.location
-                );
-                if (!eventToUpdate) throw new Error('Event not found for update');
-                const data = await eventsAPI.update(eventToUpdate.id, modalEvent);
-                setEvents(events.map(e => (e.id === eventToUpdate.id ? data : e)));
+                if (!editEventId) throw new Error('Event not found for update');
+                const data = await adminAPI.updateEvent(editEventId, eventData);
+                setEvents(events.map(e => (e.id === editEventId ? data : e)));
             }
             setShowModal(false);
+            setEditEventId(null);
         } catch (err: any) {
             setError(err.message || 'Failed to save event');
         } finally {
@@ -137,7 +156,7 @@ const AdminPage: React.FC = () => {
                             <tr key={event.id}>
                                 <td>{event.title}</td>
                                 <td>{event.description}</td>
-                                <td>{event.date.toString()}</td>
+                                <td>{new Date(event.date).toLocaleString()}</td>
                                 <td>{event.location}</td>
                                 <td>
                                     <Button variant="primary" size="sm" className="me-2" onClick={() => handleShowEdit(event)}>Edit</Button>
@@ -175,11 +194,11 @@ const AdminPage: React.FC = () => {
                             />
                         </Form.Group>
                         <Form.Group className="mb-3" controlId="date">
-                            <Form.Label>Date</Form.Label>
+                            <Form.Label>Date & Time</Form.Label>
                             <Form.Control
-                                type="date"
+                                type="datetime-local"
                                 name="date"
-                                value={modalEvent.date.toString()}
+                                value={modalEvent.date}
                                 onChange={handleModalChange}
                                 required
                             />

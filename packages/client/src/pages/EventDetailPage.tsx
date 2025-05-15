@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { eventsAPI } from '../services/api';
+import { adminAPI, eventsAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { GetEventByIdResponse } from '@events-platform/shared';
 import { Card, Button, Container, Row, Col, Spinner, Alert, ListGroup, Badge } from 'react-bootstrap';
@@ -79,7 +79,7 @@ const EventDetailPage: React.FC = () => {
 
         if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
             try {
-                await eventsAPI.delete(event.id);
+                await adminAPI.deleteEvent(event.id);
                 navigate('/events');
             } catch (err) {
                 console.error('Error deleting event:', err);

@@ -41,29 +41,6 @@ export type GetAllEventsResponse = z.infer<typeof GetAllEventsResponseSchema>;
 export const GetEventByIdResponseSchema = EventWithDetailsSchema;
 export type GetEventByIdResponse = z.infer<typeof GetEventByIdResponseSchema>;
 
-// Create event request
-export const CreateEventRequestSchema = EventBaseSchema.pick({
-    title: true,
-    description: true,
-    date: true,
-    location: true,
-})
-
-export type CreateEventRequest = z.infer<typeof CreateEventRequestSchema>;
-
-// Create event response
-export const CreateEventResponseSchema = EventBaseSchema;
-export type CreateEventResponse = z.infer<typeof CreateEventResponseSchema>;
-
-// Update event request
-export const UpdateEventRequestSchema = CreateEventRequestSchema.partial()
-
-export type UpdateEventRequest = z.infer<typeof UpdateEventRequestSchema>;
-
-// Update event response
-export const UpdateEventResponseSchema = EventBaseSchema;
-export type UpdateEventResponse = z.infer<typeof UpdateEventResponseSchema>;
-
 // Register for event request
 export const RegisterForEventRequestSchema = z.object({
     userId: z.string(),

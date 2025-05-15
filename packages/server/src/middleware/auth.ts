@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../index';
+import { USER_ROLE } from '@prisma/client';
 
 // Extend Express Request type to include user
 declare global {
@@ -9,7 +10,7 @@ declare global {
             user?: {
                 id: string;
                 email: string;
-                role?: string; // Add role to request type
+                role: USER_ROLE; // Add role to request type
             };
         }
     }

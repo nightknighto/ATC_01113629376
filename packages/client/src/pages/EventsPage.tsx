@@ -94,12 +94,18 @@ const EventsPage: React.FC = () => {
                                             <Button variant="primary" href={`/events/${event.id}`}>View Details</Button>
                                             {user && (
                                                 isOrganizer ? (
-                                                    <Badge bg="info" className="align-self-center">Organized by you</Badge>
+                                                    <Badge bg="info" className="align-self-center d-flex justify-content-center align-items-center" style={{ height: '38px', minWidth: '120px', fontWeight: 500, fontSize: '1rem' }}>
+                                                        Organized by you
+                                                    </Badge>
                                                 ) : isRegistered ? (
-                                                    <Badge bg="success" className="align-self-center">Booked</Badge>
+                                                    <Badge bg="success" className="align-self-center d-flex justify-content-center align-items-center" style={{ height: '38px', minWidth: '120px', fontWeight: 500, fontSize: '1rem' }}>
+                                                        Booked
+                                                    </Badge>
                                                 ) : (
                                                     <Button
                                                         variant="success"
+                                                        className="w-auto d-flex justify-content-center align-items-center"
+                                                        style={{ minWidth: '120px', height: '38px', fontWeight: 500, fontSize: '1rem' }}
                                                         disabled={booking === event.id}
                                                         onClick={() => handleBook(event.id)}
                                                     >

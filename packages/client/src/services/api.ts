@@ -1,7 +1,7 @@
-import { AdminDeleteEventResponse, CancelRegistrationResponse, CreateEventRequest, CreateEventResponse, GetAllEventsResponse, GetAllUsersResponse, GetEventByIdResponse, GetMeResponse, GetUserByIdResponse, LoginRequest, LoginResponse, RegisterForEventRequest, RegisterForEventResponse, RegisterRequest, RegisterResponse, UpdateEventRequest, UpdateEventResponse, UpdateUserRequest, UpdateUserResponse } from '@events-platform/shared';
+import { AdminCreateEventRequest, AdminCreateEventResponse, AdminDeleteEventResponse, AdminUpdateEventRequest, AdminUpdateEventResponse, CancelRegistrationResponse, CreateEventRequest, CreateEventResponse, GetAllEventsResponse, GetAllUsersResponse, GetEventByIdResponse, GetMeResponse, GetUserByIdResponse, LoginRequest, LoginResponse, RegisterForEventRequest, RegisterForEventResponse, RegisterRequest, RegisterResponse, UpdateEventRequest, UpdateEventResponse, UpdateUserRequest, UpdateUserResponse } from '@events-platform/shared';
 import axios, { AxiosResponse } from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export const api = axios.create({
     baseURL: API_URL,
@@ -50,17 +50,6 @@ export const eventsAPI = {
         const response = await api.get<GetEventByIdResponse>(`/events/${id}`);
         return response.data;
     },
-    create: async (eventData: CreateEventRequest) => {
-        const response = await api.post<CreateEventResponse, AxiosResponse<CreateEventResponse>, CreateEventRequest>('/events', eventData);
-        return response.data;
-    },
-    update: async (id: string, eventData: UpdateEventRequest) => {
-        const response = await api.put<UpdateEventResponse, AxiosResponse<UpdateEventResponse>, UpdateEventRequest>(`/events/${id}`, eventData);
-        return response.data;
-    },
-    delete: async (id: string) => {
-        await api.delete<AdminDeleteEventResponse>(`/events/${id}`);
-    },
     register: async (eventId: string, userId: string) => {
         const response = await api.post<RegisterForEventResponse, AxiosResponse<RegisterForEventResponse>, RegisterForEventRequest>(`/events/${eventId}/register`, { userId });
         return response.data;
@@ -69,6 +58,26 @@ export const eventsAPI = {
         await api.delete<CancelRegistrationResponse>(`/events/${eventId}/register/${userId}`);
     },
 };
+
+export const adminAPI = {
+    createEvent: async (eventData: AdminCreateEventRequest) => {
+        // Always send date as ISO string
+        const payload = { ...eventData, date: new Date(eventData.date).toISOString() };
+        const response = await api.post<AdminCreateEventResponse, AxiosResponse<AdminCreateEventResponse>, AdminCreateEventRequest>('/admin/events', payload);
+        return response.data;
+    },
+    updateEvent: async (id: string, eventData: AdminUpdateEventRequest) => {
+        // Only send date as ISO string if present
+        const payload = { ...eventData };
+        // @ts-ignore
+        if (payload.date) payload.date = new Date(payload.date).toISOString();
+        const response = await api.put<AdminUpdateEventResponse, AxiosResponse<AdminUpdateEventResponse>, AdminUpdateEventRequest>(`/admin/events/${id}`, payload);
+        return response.data;
+    },
+    deleteEvent: async (id: string) => {
+        await api.delete<AdminDeleteEventResponse>(`/admin/events/${id}`);
+    },
+}
 
 // Users API functions
 export const usersAPI = {

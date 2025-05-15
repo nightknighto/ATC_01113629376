@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { GetAllEventsResponse, GetEventByIdResponse, CreateEventRequest, CreateEventResponse, UpdateEventRequest, UpdateEventResponse, RegisterForEventRequest, RegisterForEventResponse, CancelRegistrationResponse, ApiError } from '@events-platform/shared';
+import { GetAllEventsResponse, GetEventByIdResponse, RegisterForEventRequest, RegisterForEventResponse, CancelRegistrationResponse, ApiError } from '@events-platform/shared';
 import { EventModel } from '../models/event.model';
 import { RegistrationModel } from '../models/registration.model';
 
@@ -27,53 +27,7 @@ export namespace EventsController {
             res.status(500).json({ error: 'Failed to fetch event' });
         }
     };
-
-    export const createEvent = async (req: Request<{}, CreateEventResponse, CreateEventRequest>, res: Response<CreateEventResponse | ApiError>) => {
-        try {
-            const { title, date, description, location } = req.body;
-            const event = await EventModel.createWithOrganizer({
-                title,
-                description,
-                date: new Date(date),
-                location,
-                organizerId: req.user!.id,
-            });
-            res.status(201).json(event);
-        } catch (error) {
-            console.error('Error creating event:', error);
-            res.status(400).json({ error: 'Failed to create event' });
-        }
-    };
-
-    export const updateEvent = async (req: Request<{ id: string }, UpdateEventResponse, UpdateEventRequest>, res: Response<UpdateEventResponse | ApiError>) => {
-        try {
-            const { id } = req.params;
-            const { date, description, location, title } = req.body;
-            const event = await EventModel.updateWithOrganizer(id, {
-                title,
-                description,
-                date: date,
-                location,
-            });
-            res.json(event);
-        } catch (error) {
-            console.error('Error updating event:', error);
-            res.status(400).json({ error: 'Failed to update event' });
-        }
-    };
-
-    export const deleteEvent = async (req: Request<{ id: string }>, res: Response) => {
-        try {
-            const { id } = req.params;
-            await RegistrationModel.deleteMany({ eventId: id });
-            await EventModel.deleteById(id);
-            res.status(204).send();
-        } catch (error) {
-            console.error('Error deleting event:', error);
-            res.status(500).json({ error: 'Failed to delete event' });
-        }
-    };
-
+    
     export const registerForEvent = async (req: Request<{ id: string }, RegisterForEventResponse, RegisterForEventRequest>, res: Response<RegisterForEventResponse | ApiError>) => {
         try {
             const { id } = req.params;

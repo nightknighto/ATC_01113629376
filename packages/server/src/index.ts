@@ -18,7 +18,7 @@ app.use(rateLimiter);
 app.use(cors());
 app.use(express.json());
 
-app.use('/api', mainRouter);
+app.use(mainRouter);
 
 // Start server
 app.listen(PORT, () => {

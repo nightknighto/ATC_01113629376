@@ -37,9 +37,9 @@ model Event {
 
 model Registration {
     id        String   @id @default(uuid())
-    event     Event    @relation("EventRegistrations", fields: [eventId], references: [id])
+    event     Event    @relation("EventRegistrations", fields: [eventId], references: [id], onDelete: Cascade)
     eventId   String
-    user      User     @relation("UserRegistrations", fields: [userId], references: [id])
+    user      User     @relation("UserRegistrations", fields: [userId], references: [id], onDelete: Cascade)
     userId    String
     createdAt DateTime @default(now())
 

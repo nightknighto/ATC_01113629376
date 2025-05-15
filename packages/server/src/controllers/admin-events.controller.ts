@@ -3,7 +3,7 @@ import { AdminCreateEventRequest, AdminCreateEventResponse, AdminUpdateEventRequ
 import { EventModel } from '../models/event.model';
 
 export namespace AdminEventsController {
-    export const getAll = async (req: Request, res: Response<AdminGetAllEventsResponse | ApiError>) => {
+    export const getAllEvents = async (req: Request, res: Response<AdminGetAllEventsResponse | ApiError>) => {
         try {
             const events = await EventModel.findAllWithDetails();
             res.json(events);
@@ -13,14 +13,14 @@ export namespace AdminEventsController {
         }
     };
 
-    export const create = async (req: Request<{}, AdminCreateEventResponse, AdminCreateEventRequest>, res: Response<AdminCreateEventResponse | ApiError>) => {
+    export const createEvent = async (req: Request<{}, AdminCreateEventResponse, AdminCreateEventRequest>, res: Response<AdminCreateEventResponse | ApiError>) => {
         try {
             const data = req.body;
             const eventDate = new Date(data.date);
             if (isNaN(eventDate.getTime()) || eventDate < new Date()) {
                 return res.status(400).json({ error: 'Event date must be in the future.' });
             }
-            // Convert date to ISO string if needed
+            // Always use Date object for Prisma
             const event = await EventModel.createWithOrganizer({
                 ...data,
                 date: eventDate,
@@ -33,20 +33,20 @@ export namespace AdminEventsController {
         }
     };
 
-    export const update = async (req: Request<{ id: string }, AdminUpdateEventResponse, AdminUpdateEventRequest>, res: Response<AdminUpdateEventResponse | ApiError>) => {
+    export const updateEvent = async (req: Request<{ id: string }, AdminUpdateEventResponse, AdminUpdateEventRequest>, res: Response<AdminUpdateEventResponse | ApiError>) => {
         try {
             const { id } = req.params;
             const data = req.body;
+            // Always convert date to Date object if present
+            let updateData = { ...data };
             if (data.date) {
                 const eventDate = new Date(data.date);
                 if (isNaN(eventDate.getTime()) || eventDate < new Date()) {
                     return res.status(400).json({ error: 'Event date must be in the future.' });
                 }
+                updateData.date = eventDate;
             }
-            const event = await EventModel.updateWithOrganizer(id, {
-                ...data,
-                date: data.date
-            });
+            const event = await EventModel.updateWithOrganizer(id, updateData);
             res.json(event);
         } catch (error) {
             console.error('AdminEventsController.update error:', error);
@@ -54,7 +54,7 @@ export namespace AdminEventsController {
         }
     };
 
-    export const remove = async (req: Request<{ id: string }>, res: Response<AdminDeleteEventResponse | ApiError>) => {
+    export const deleteEvent = async (req: Request<{ id: string }>, res: Response<AdminDeleteEventResponse | ApiError>) => {
         try {
             const { id } = req.params;
             await EventModel.deleteById(id);
