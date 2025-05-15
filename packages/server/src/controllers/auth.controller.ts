@@ -1,32 +1,33 @@
 import bcrypt from 'bcryptjs';
-import { UserSchema } from '@events-platform/shared';
+import { RegisterRequest, RegisterResponse, LoginRequest, LoginResponse, GetMeResponse, ApiError } from '@events-platform/shared';
 import { Request, Response } from 'express';
 import { UserModel } from '../models';
 import { JwtService } from '../services';
 
 export namespace AuthController {
-    export const register = async (req: Request, res: Response) => {
+    export const register = async (req: Request<{}, RegisterResponse, RegisterRequest>, res: Response<RegisterResponse | ApiError>) => {
         try {
-            const validatedData = UserSchema.parse(req.body);
-            const existingUser = await UserModel.findByEmail(validatedData.email);
+            const { name, email, password } = req.body;
+            const existingUser = await UserModel.findByEmail(email);
             if (existingUser) {
                 return res.status(400).json({ error: 'User with this email already exists' });
             }
-            const hashedPassword = await bcrypt.hash(validatedData.password || '', 10);
+            const hashedPassword = await bcrypt.hash(password || '', 10);
             const user = await UserModel.create({
-                name: validatedData.name,
-                email: validatedData.email,
+                name,
+                email,
                 password: hashedPassword,
             });
             const token = JwtService.sign({ userId: user.id, email: user.email });
-            res.status(201).json({ user, token });
+            const { password: _, ...returnedUser } = user;
+            res.status(201).json({ user: returnedUser, token });
         } catch (error) {
             console.error('Error registering user:', error);
             res.status(400).json({ error: 'Failed to register user' });
         }
     };
 
-    export const login = async (req: Request, res: Response) => {
+    export const login = async (req: Request<{}, LoginResponse, LoginRequest>, res: Response<LoginResponse | ApiError>) => {
         try {
             const { email, password } = req.body;
             const user = await UserModel.findByEmail(email);
@@ -38,12 +39,10 @@ export namespace AuthController {
                 return res.status(401).json({ error: 'Invalid credentials' });
             }
             const token = JwtService.sign({ userId: user.id, email: user.email });
+
+            const { password: _, ...returnedUser } = user;
             res.json({
-                user: {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                },
+                user: returnedUser,
                 token,
             });
         } catch (error) {
@@ -52,7 +51,7 @@ export namespace AuthController {
         }
     };
 
-    export const getMe = async (req: Request, res: Response) => {
+    export const getMe = async (req: Request, res: Response<GetMeResponse | ApiError>) => {
         try {
             const authHeader = req.headers.authorization;
             if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -65,7 +64,8 @@ export namespace AuthController {
                 if (!user) {
                     return res.status(404).json({ error: 'User not found' });
                 }
-                res.json(user);
+                const { password: _, ...returnedUser } = user;
+                res.json(returnedUser);
             } catch (error) {
                 return res.status(401).json({ error: 'Invalid token' });
             }

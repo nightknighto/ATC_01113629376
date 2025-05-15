@@ -9,6 +9,7 @@ declare global {
             user?: {
                 id: string;
                 email: string;
+                role?: string; // Add role to request type
             };
         }
     }
@@ -35,6 +36,11 @@ export const authenticate = async (
 
             const user = await prisma.user.findUnique({
                 where: { id: decoded.userId },
+                select: {
+                    id: true,
+                    email: true,
+                    role: true, // Select role for RBAC
+                },
             });
 
             if (!user) {
@@ -45,6 +51,7 @@ export const authenticate = async (
             req.user = {
                 id: user.id,
                 email: user.email,
+                role: user.role, // Add role to request for RBAC
             };
 
             next();

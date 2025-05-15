@@ -14,7 +14,11 @@ export const RegisterRequestSchema = AuthUserSchema.pick({
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 
 // Register response
-export const RegisterResponseSchema = AuthUserSchema.omit({ password: true });
+export const RegisterResponseSchema = z.object({
+    token: z.string(),
+    user: AuthUserSchema.omit({ password: true }),
+});
+
 export type RegisterResponse = z.infer<typeof RegisterResponseSchema>;
 
 // Login request

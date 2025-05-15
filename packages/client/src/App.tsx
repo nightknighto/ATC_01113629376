@@ -6,6 +6,7 @@ import EventDetailPage from './pages/EventDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AdminPage from './pages/AdminPage';
+import NotFoundPage from './pages/NotFoundPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Navbar, Nav, Container, Button, NavDropdown } from 'react-bootstrap';
 
@@ -57,6 +58,7 @@ function AppContent() {
                     <Route path="/events/create" element={<div className="container mx-auto p-4">Create event page will be implemented</div>} />
                     <Route path="/events/:id/edit" element={<div className="container mx-auto p-4">Edit event page will be implemented</div>} />
                     <Route path="/profile" element={<div className="container mx-auto p-4">User profile page will be implemented</div>} />
+                    <Route path="*" element={<NotFoundPage />} />
                 </Routes>
             </main>
             <footer className="app-footer">

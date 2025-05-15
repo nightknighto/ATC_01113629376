@@ -1,17 +1,15 @@
 import { Request, Response } from 'express';
-import { UserSchema } from '@events-platform/shared';
-import bcrypt from 'bcryptjs';
+import { CreateUserRequest, CreateUserResponse, UpdateUserRequest, UpdateUserResponse, GetAllUsersResponse, GetUserByIdResponse, ApiError } from '@events-platform/shared';
 import { UserModel } from '../models';
+import { PasswordService } from '../services/password.service';
 
 export namespace UsersController {
-    export const getAllUsers = async (req: Request, res: Response) => {
+    export const getAllUsers = async (req: Request, res: Response<GetAllUsersResponse | ApiError>) => {
         try {
-            // Assuming UserModel has a method to get all users with counts
-            const users = await UserModel.getAllWithCounts?.();
+            const users = await UserModel.getAllWithCounts();
             if (users) {
                 res.json(users);
             } else {
-                // fallback to direct prisma if method not implemented
                 res.status(501).json({ error: 'Not implemented in UserModel' });
             }
         } catch (error) {
@@ -20,10 +18,10 @@ export namespace UsersController {
         }
     };
 
-    export const getUserById = async (req: Request, res: Response) => {
+    export const getUserById = async (req: Request, res: Response<GetUserByIdResponse | ApiError>) => {
         try {
             const { id } = req.params;
-            const user = await UserModel.findByIdWithDetails?.(id);
+            const user = await UserModel.findByIdWithDetails(id);
             if (!user) {
                 return res.status(404).json({ error: 'User not found' });
             }
@@ -34,17 +32,17 @@ export namespace UsersController {
         }
     };
 
-    export const createUser = async (req: Request, res: Response) => {
+    export const createUser = async (req: Request<{}, CreateUserResponse, CreateUserRequest>, res: Response<CreateUserResponse | ApiError>) => {
         try {
-            const validatedData = UserSchema.parse(req.body);
-            const existingUser = await UserModel.findByEmail(validatedData.email);
+            const { name, email, password } = req.body;
+            const existingUser = await UserModel.findByEmail(email);
             if (existingUser) {
                 return res.status(400).json({ error: 'User with this email already exists' });
             }
-            const hashedPassword = await bcrypt.hash(validatedData.password || '', 10);
+            const hashedPassword = await PasswordService.hashPassword(password || '');
             const user = await UserModel.create({
-                name: validatedData.name,
-                email: validatedData.email,
+                name,
+                email,
                 password: hashedPassword,
             });
             res.status(201).json(user);
@@ -54,18 +52,18 @@ export namespace UsersController {
         }
     };
 
-    export const updateUser = async (req: Request, res: Response) => {
+    export const updateUser = async (req: Request<{ id: string }, UpdateUserResponse, UpdateUserRequest>, res: Response<UpdateUserResponse | ApiError>) => {
         try {
             const { id } = req.params;
-            const validatedData = UserSchema.parse(req.body);
+            const { name, email, password } = req.body;
             const updateData: any = {
-                name: validatedData.name,
-                email: validatedData.email,
+                name,
+                email,
             };
-            if (validatedData.password) {
-                updateData.password = await bcrypt.hash(validatedData.password, 10);
+            if (password) {
+                updateData.password = await PasswordService.hashPassword(password);
             }
-            const user = await UserModel.update?.(id, updateData);
+            const user = await UserModel.update(id, updateData);
             if (!user) {
                 return res.status(404).json({ error: 'User not found' });
             }
@@ -76,10 +74,10 @@ export namespace UsersController {
         }
     };
 
-    export const deleteUser = async (req: Request, res: Response) => {
+    export const deleteUser = async (req: Request<{ id: string }>, res: Response) => {
         try {
             const { id } = req.params;
-            const deleted = await UserModel.deleteByIdWithCascade?.(id);
+            const deleted = await UserModel.deleteByIdWithCascade(id);
             if (deleted) {
                 res.status(204).send();
             } else {

@@ -15,6 +15,7 @@ model User {
     name          String
     email         String         @unique
     password      String
+    role          USER_ROLE      @default(user) // 'user' or 'admin'
     events        Event[]        @relation("UserEvents")
     registrations Registration[] @relation("UserRegistrations")
     createdAt     DateTime       @default(now())
@@ -43,4 +44,9 @@ model Registration {
     createdAt DateTime @default(now())
 
     @@unique([eventId, userId])
+}
+
+enum USER_ROLE {
+    user
+    admin
 }

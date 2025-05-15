@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Container, Modal, Form, Alert, Spinner } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
-import { api } from '../services/api';
+import { api, eventsAPI } from '../services/api';
 import {
     AdminGetAllEventsResponse,
     AdminCreateEventRequest,
@@ -20,6 +20,16 @@ const defaultEvent: AdminCreateEventRequest = {
 
 const AdminPage: React.FC = () => {
     const { user } = useAuth();
+
+    // Show non-authorized message if not logged in or not admin
+    if (!user || user.role !== 'admin') {
+        return (
+            <Container className="py-5">
+                <Alert variant="danger">Access denied. Admins only.</Alert>
+            </Container>
+        );
+    }
+
     const [events, setEvents] = useState<AdminGetAllEventsResponse>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -36,8 +46,8 @@ const AdminPage: React.FC = () => {
         setLoading(true);
         setError('');
         try {
-            const res = await api.get<AdminGetAllEventsResponse>('/admin/events');
-            setEvents(res.data);
+            const data = await eventsAPI.getAll();
+            setEvents(data);
         } catch (err: any) {
             setError(err.message || 'Failed to fetch events');
         } finally {
@@ -66,7 +76,7 @@ const AdminPage: React.FC = () => {
         if (!id) return;
         if (!window.confirm('Are you sure you want to delete this event?')) return;
         try {
-            await api.delete<AdminDeleteEventResponse>(`/admin/events/${id}`);
+            await eventsAPI.delete(id);
             setEvents(events.filter(e => e.id !== id));
         } catch (err: any) {
             setError(err.message || 'Failed to delete event');
@@ -83,8 +93,8 @@ const AdminPage: React.FC = () => {
         setError('');
         try {
             if (modalType === 'create') {
-                const res = await api.post<AdminCreateEventResponse>('/admin/events', modalEvent);
-                setEvents([...events, res.data]);
+                const data = await eventsAPI.create(modalEvent)
+                setEvents([...events, data]);
             } else {
                 const eventToUpdate = events.find(e =>
                     e.title === modalEvent.title &&
@@ -93,8 +103,8 @@ const AdminPage: React.FC = () => {
                     e.location === modalEvent.location
                 );
                 if (!eventToUpdate) throw new Error('Event not found for update');
-                const res = await api.put<AdminUpdateEventResponse>(`/admin/events/${eventToUpdate.id}`, modalEvent);
-                setEvents(events.map(e => (e.id === eventToUpdate.id ? res.data : e)));
+                const data = await eventsAPI.update(eventToUpdate.id, modalEvent);
+                setEvents(events.map(e => (e.id === eventToUpdate.id ? data : e)));
             }
             setShowModal(false);
         } catch (err: any) {
@@ -103,10 +113,6 @@ const AdminPage: React.FC = () => {
             setSaving(false);
         }
     };
-
-    // if (!user || user.role !== UserRole.ADMIN) {
-    //     return <Container className="py-5"><Alert variant="danger">Access denied. Admins only.</Alert></Container>;
-    // }
 
     return (
         <Container className="py-5">

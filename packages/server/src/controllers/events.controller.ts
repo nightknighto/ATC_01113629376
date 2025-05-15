@@ -1,24 +1,12 @@
 import { Request, Response } from 'express';
-import { prisma } from '../index';
-import { EventSchema } from '@events-platform/shared';
+import { GetAllEventsResponse, GetEventByIdResponse, CreateEventRequest, CreateEventResponse, UpdateEventRequest, UpdateEventResponse, RegisterForEventRequest, RegisterForEventResponse, CancelRegistrationResponse, ApiError } from '@events-platform/shared';
+import { EventModel } from '../models/event.model';
+import { RegistrationModel } from '../models/registration.model';
 
 export namespace EventsController {
-    export const getAllEvents = async (req: Request, res: Response) => {
+    export const getAllEvents = async (req: Request, res: Response<GetAllEventsResponse | ApiError>) => {
         try {
-            const events = await prisma.event.findMany({
-                include: {
-                    organizer: {
-                        select: {
-                            id: true,
-                            name: true,
-                            email: true,
-                        },
-                    },
-                    _count: {
-                        select: { registrations: true },
-                    },
-                },
-            });
+            const events = await EventModel.findAllWithDetails();
             res.json(events);
         } catch (error) {
             console.error('Error fetching events:', error);
@@ -26,32 +14,10 @@ export namespace EventsController {
         }
     };
 
-    export const getEventById = async (req: Request, res: Response) => {
+    export const getEventById = async (req: Request<{ id: string }>, res: Response<GetEventByIdResponse | ApiError>) => {
         try {
             const { id } = req.params;
-            const event = await prisma.event.findUnique({
-                where: { id },
-                include: {
-                    organizer: {
-                        select: {
-                            id: true,
-                            name: true,
-                            email: true,
-                        },
-                    },
-                    registrations: {
-                        include: {
-                            user: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                    email: true,
-                                },
-                            },
-                        },
-                    },
-                },
-            });
+            const event = await EventModel.findByIdWithDetails(id);
             if (!event) {
                 return res.status(404).json({ error: 'Event not found' });
             }
@@ -62,26 +28,15 @@ export namespace EventsController {
         }
     };
 
-    export const createEvent = async (req: Request, res: Response) => {
+    export const createEvent = async (req: Request<{}, CreateEventResponse, CreateEventRequest>, res: Response<CreateEventResponse | ApiError>) => {
         try {
-            const validatedData = EventSchema.parse(req.body);
-            const event = await prisma.event.create({
-                data: {
-                    title: validatedData.title,
-                    description: validatedData.description,
-                    date: new Date(validatedData.date),
-                    location: validatedData.location,
-                    organizerId: validatedData.organizerId,
-                },
-                include: {
-                    organizer: {
-                        select: {
-                            id: true,
-                            name: true,
-                            email: true,
-                        },
-                    },
-                },
+            const { title, date, description, location } = req.body;
+            const event = await EventModel.createWithOrganizer({
+                title,
+                description,
+                date: new Date(date),
+                location,
+                organizerId: req.user!.id,
             });
             res.status(201).json(event);
         } catch (error) {
@@ -90,27 +45,15 @@ export namespace EventsController {
         }
     };
 
-    export const updateEvent = async (req: Request, res: Response) => {
+    export const updateEvent = async (req: Request<{ id: string }, UpdateEventResponse, UpdateEventRequest>, res: Response<UpdateEventResponse | ApiError>) => {
         try {
             const { id } = req.params;
-            const validatedData = EventSchema.parse(req.body);
-            const event = await prisma.event.update({
-                where: { id },
-                data: {
-                    title: validatedData.title,
-                    description: validatedData.description,
-                    date: new Date(validatedData.date),
-                    location: validatedData.location,
-                },
-                include: {
-                    organizer: {
-                        select: {
-                            id: true,
-                            name: true,
-                            email: true,
-                        },
-                    },
-                },
+            const { date, description, location, title } = req.body;
+            const event = await EventModel.updateWithOrganizer(id, {
+                title,
+                description,
+                date: date,
+                location,
             });
             res.json(event);
         } catch (error) {
@@ -119,15 +62,11 @@ export namespace EventsController {
         }
     };
 
-    export const deleteEvent = async (req: Request, res: Response) => {
+    export const deleteEvent = async (req: Request<{ id: string }>, res: Response) => {
         try {
             const { id } = req.params;
-            await prisma.registration.deleteMany({
-                where: { eventId: id },
-            });
-            await prisma.event.delete({
-                where: { id },
-            });
+            await RegistrationModel.deleteMany({ eventId: id });
+            await EventModel.deleteById(id);
             res.status(204).send();
         } catch (error) {
             console.error('Error deleting event:', error);
@@ -135,47 +74,30 @@ export namespace EventsController {
         }
     };
 
-    export const registerForEvent = async (req: Request, res: Response) => {
+    export const registerForEvent = async (req: Request<{ id: string }, RegisterForEventResponse, RegisterForEventRequest>, res: Response<RegisterForEventResponse | ApiError>) => {
         try {
             const { id } = req.params;
             const { userId } = req.body;
             if (!userId) {
                 return res.status(400).json({ error: 'User ID is required' });
             }
-            const registration = await prisma.registration.create({
-                data: {
-                    eventId: id,
-                    userId,
-                },
-                include: {
-                    event: true,
-                    user: {
-                        select: {
-                            id: true,
-                            name: true,
-                            email: true,
-                        },
-                    },
-                },
+            const registration = await RegistrationModel.createWithDetails({
+                eventId: id,
+                userId,
             });
-            res.status(201).json(registration);
+            res.status(201).json({
+                success: true
+            });
         } catch (error) {
             console.error('Error registering for event:', error);
             res.status(400).json({ error: 'Failed to register for event' });
         }
     };
 
-    export const cancelRegistration = async (req: Request, res: Response) => {
+    export const cancelRegistration = async (req: Request<{ eventId: string; userId: string }>, res: Response<CancelRegistrationResponse | ApiError>) => {
         try {
             const { eventId, userId } = req.params;
-            await prisma.registration.delete({
-                where: {
-                    eventId_userId: {
-                        eventId,
-                        userId,
-                    },
-                },
-            });
+            await RegistrationModel.deleteByCompositeKey(eventId, userId);
             res.status(204).send();
         } catch (error) {
             console.error('Error cancelling registration:', error);
