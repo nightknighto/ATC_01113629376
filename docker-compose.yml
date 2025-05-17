@@ -1,6 +1,76 @@
 services:
-  postgres:
+  frontend:
+    image: events_platform/frontend:dev
+    pull_policy: build
+    build:
+      args:
+        - TARGET_APP=frontend
+      target: frontend-dev
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - public
+    develop:
+      watch:
+        - path: ./packages/frontend
+          target: /monorepo/packages/frontend
+          action: sync
+          ignore:
+            - node_modules
+            - package.json
+        - path: ./packages/frontend/package.json
+          action: rebuild
+        - &develop_shared_src # YAML Anchor - we will save this value to re-use later
+          path: ./packages/shared
+          target: /monorepo/packages/shared
+          action: sync+restart
+          ignore:
+            - node_modules
+        - &develop_shared_package_json # 
+          path: ./packages/shared/package.json
+          action: rebuild
+
+  backend:
+    image: events_platform/backend:dev
+    pull_policy: build
+    build:
+      args:
+        - TARGET_APP=backend
+      target: backend-dev
+    container_name: backend
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@database/events_platform
+      - NODE_ENV=development
+    ports:
+      - "3000:3000"
+      - "5555:5555" # Prisma Studio port
+    networks:
+      - private
+      - public
+    post_start:
+      - command: npm run prisma:studio -w backend
+    depends_on:
+      database:
+        condition: service_healthy
+    secrets:
+      - backend_secret
+    develop:
+      watch:
+        - path: ./packages/backend
+          target: /monorepo/packages/backend
+          action: sync
+          ignore:
+            - node_modules
+            - package.json
+        - path: ./packages/backend/package.json
+          action: rebuild
+        - *develop_shared_src # YAML Alias - re-use the value of the anchor defined earlier
+        - *develop_shared_package_json
+
+  database:
     image: postgres
+    container_name: database
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -9,5 +79,23 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - private
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+networks:
+  private:
+  public:
+
 volumes:
+  docker_mirror_cache:
+  docker_mirror_certs:
   postgres_data:
+
+secrets:
+  backend_secret:
+    file: ./packages/backend/.env

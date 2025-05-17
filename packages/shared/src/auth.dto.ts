@@ -2,7 +2,10 @@ import { z } from "zod";
 import { UserWithPasswordBaseSchema } from "./users.dto";
 
 // Common Auth fields
-export const AuthUserSchema = UserWithPasswordBaseSchema;
+export const AuthUserSchema = UserWithPasswordBaseSchema.omit({
+    createdAt: true,
+    updatedAt: true,
+})
 
 // Register request
 export const RegisterRequestSchema = AuthUserSchema.pick({

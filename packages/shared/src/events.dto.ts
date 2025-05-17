@@ -1,27 +1,21 @@
 import { z } from "zod";
 import { UserBaseSchema } from "./users.dto";
+import { paginateResponse } from "./pagination.dto";
 
 // Common Event fields
 export const EventBaseSchema = z.object({
     id: z.string(),
-    title: z.string(),
+    name: z.string(),
     description: z.string(),
+    category: z.string(),
     date: z.date(),
-    location: z.string(),
+    venue: z.string(),
+    price: z.number(),
+    image: z.string(),
     createdAt: z.date(),
     updatedAt: z.date(),
+    registrationCount: z.number(),
 });
-
-const RegistrationsExtensionSchema = z.object({
-    registrations: z.object({
-        id: z.string(),
-        user: UserBaseSchema.pick({
-            id: true,
-            name: true,
-            email: true
-        }),
-    }).array()
-})
 
 const OrganizerExtensionSchema = z.object({
     organizer: z.object({
@@ -31,21 +25,17 @@ const OrganizerExtensionSchema = z.object({
     })
 });
 
-const EventWithDetailsSchema = EventBaseSchema.merge(RegistrationsExtensionSchema).merge(OrganizerExtensionSchema);
+const EventWithDetailsSchema = EventBaseSchema.merge(OrganizerExtensionSchema).extend({
+    isRegistered: z.boolean(), // Indicates if the current user is registered
+});
 
 // Get all events response
-export const GetAllEventsResponseSchema = z.array(EventWithDetailsSchema);
+export const GetAllEventsResponseSchema = paginateResponse(z.array(EventWithDetailsSchema));
 export type GetAllEventsResponse = z.infer<typeof GetAllEventsResponseSchema>;
 
 // Get event by ID response
 export const GetEventByIdResponseSchema = EventWithDetailsSchema;
 export type GetEventByIdResponse = z.infer<typeof GetEventByIdResponseSchema>;
-
-// Register for event request
-export const RegisterForEventRequestSchema = z.object({
-    userId: z.string(),
-});
-export type RegisterForEventRequest = z.infer<typeof RegisterForEventRequestSchema>;
 
 // Register for event response
 export const RegisterForEventResponseSchema = z.object({
@@ -58,3 +48,15 @@ export const CancelRegistrationResponseSchema = z.object({
     success: z.boolean(),
 });
 export type CancelRegistrationResponse = z.infer<typeof CancelRegistrationResponseSchema>;
+
+// Registration DTO for event registrations endpoint
+export const EventRegistrationSchema = z.object({
+    id: z.string(),
+    user: z.object({
+        id: z.string(),
+        name: z.string(),
+        email: z.string().email(),
+    })
+});
+export const GetEventRegistrationsResponseSchema = paginateResponse(z.array(EventRegistrationSchema));
+export type GetEventRegistrationsResponse = z.infer<typeof GetEventRegistrationsResponseSchema>;
