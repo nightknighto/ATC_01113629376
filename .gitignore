@@ -17,3 +17,4 @@ coverage/
 *.njsproj
 *.sln
 *.sw?
+.turbo

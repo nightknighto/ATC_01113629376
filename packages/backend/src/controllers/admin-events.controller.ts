@@ -67,7 +67,7 @@ export namespace AdminEventsController {
     // Upload event image (multipart/form-data, for existing event)
     export const uploadEventImage = [
         MulterService.upload.single('image'),
-        async (req: Request<{ id: string }, any, any>, res: Response) => {
+        async (req: Request<{ id: string }>, res: Response) => {
             try {
                 const { id } = req.params;
                 if (!req.file) return res.status(400).json({ error: 'No image file uploaded' });
