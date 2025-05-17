@@ -1,5 +1,10 @@
 # Events Platform Monorepo
 
+Fully deployed and published:
+- Frontend: [Netlify](https://events-platform-me.netlify.app/)
+- Backend: [Azure Container Apps](https://backend.greenriver-2e29ec9e.westus2.azurecontainerapps.io/docs)
+- Database: Azure Container Apps (internal)
+
 A full-stack event booking platform built with modern technologies, organized as a monorepo for seamless development and integration. This system enables users to browse, register, and manage events, while providing admins with robust management tools.
 
 ---
