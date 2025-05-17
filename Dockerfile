@@ -13,8 +13,11 @@ WORKDIR /monorepo
 # Copy the root package.json and package-lock.json files
 COPY package*.json ./
 
+COPY turbo.json ./
+
 # Copy the shared packages' package.json file
 COPY packages/shared/package*.json ./packages/shared/
+
 
 # Copy the chosen app's package.json file
 COPY packages/${TARGET_APP}/package*.json ./packages/${TARGET_APP}/

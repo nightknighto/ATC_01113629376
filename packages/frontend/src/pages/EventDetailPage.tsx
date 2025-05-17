@@ -192,9 +192,22 @@ const EventDetailPage: React.FC = () => {
                             </Row>
                             <div className="mb-3">
                                 {event.image ? (
-                                    <img src={event.image} alt={event.name} style={{ width: 360, height: 240, objectFit: 'cover', borderRadius: 12, boxShadow: '0 2px 12px #0002', marginBottom: 24 }} />
+                                    <img
+                                        src={event.image}
+                                        alt={event.name}
+                                        className="img-fluid"
+                                        style={{
+                                            width: '100%',
+                                            maxWidth: 480,
+                                            aspectRatio: '3/2',
+                                            objectFit: 'cover',
+                                            borderRadius: 12,
+                                            boxShadow: '0 2px 12px #0002',
+                                            marginBottom: 24
+                                        }}
+                                    />
                                 ) : (
-                                    <div style={{ width: 360, height: 240, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: 24, borderRadius: 12, boxShadow: '0 2px 12px #0002', marginBottom: 24 }}>
+                                    <div style={{ width: '100%', maxWidth: 480, aspectRatio: '3/2', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: 24, borderRadius: 12, boxShadow: '0 2px 12px #0002', marginBottom: 24 }}>
                                         No Image
                                     </div>
                                 )}

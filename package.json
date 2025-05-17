@@ -7,6 +7,7 @@
     ],
     "scripts": {
         "dev": "turbo run dev",
+        "dev:docker": "turbo run dev:docker",
         "build": "turbo run build",
         "start": "turbo run start",
         "lint": "turbo run lint"

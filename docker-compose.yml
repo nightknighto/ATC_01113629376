@@ -6,7 +6,6 @@ services:
       args:
         - TARGET_APP=frontend
       target: frontend-dev
-    container_name: frontend
     ports:
       - "3000:3000"
     networks:
@@ -38,12 +37,12 @@ services:
       args:
         - TARGET_APP=backend
       target: backend-dev
-    container_name: backend
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@database/events_platform
       - NODE_ENV=development
+      - PORT=3001
     ports:
-      - "3000:3000"
+      - "3001:3001"
       - "5555:5555" # Prisma Studio port
     networks:
       - private
@@ -70,7 +69,6 @@ services:
 
   database:
     image: postgres
-    container_name: database
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres

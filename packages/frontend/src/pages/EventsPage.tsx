@@ -174,9 +174,21 @@ const EventsPage: React.FC = () => {
                                             </div>
                                             <div className="mb-2">
                                                 {event.image ? (
-                                                    <img src={event.image} alt={event.name} style={{ width: 240, height: 160, objectFit: 'cover', borderRadius: 8, boxShadow: '0 2px 8px #0001' }} />
+                                                    <img
+                                                        src={event.image}
+                                                        alt={event.name}
+                                                        className="img-fluid"
+                                                        style={{
+                                                            width: '100%',
+                                                            maxWidth: 240,
+                                                            aspectRatio: '3/2',
+                                                            objectFit: 'cover',
+                                                            borderRadius: 8,
+                                                            boxShadow: '0 2px 8px #0001'
+                                                        }}
+                                                    />
                                                 ) : (
-                                                    <div style={{ width: 240, height: 160, background: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c757d', fontSize: 18, borderRadius: 8, boxShadow: '0 2px 8px #0001', border: '1px dashed #ced4da' }}>
+                                                    <div style={{ width: '100%', maxWidth: 240, aspectRatio: '3/2', background: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c757d', fontSize: 18, borderRadius: 8, boxShadow: '0 2px 8px #0001', border: '1px dashed #ced4da' }}>
                                                         No Image Available
                                                     </div>
                                                 )}

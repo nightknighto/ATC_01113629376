@@ -110,6 +110,41 @@ Inter-package dependencies are managed via local imports and aliases (e.g., `@ev
 
 ## Development & Setup
 
+There are ways: Through Docker Compose, or locally.
+
+## Docker Compose Setup (Recommended)
+
+### Prerequisites
+- Docker
+
+### 1. Clone the repository
+```sh
+git clone <repository-url>
+cd Events-Platform-Fullstack
+```
+
+### 2. Set up environment variables
+- **Backend**: `packages/backend/.env` (see `.env.example`)
+
+> If you dont have an azure account, don't add images when creating events (It is not required)
+
+### 3. Start the docker compose
+```sh
+docker compose up
+```
+
+> Add `--watch` to the command to enable live reloading for the backend and frontend services.
+
+### 4. Access the app
+- Frontend: [http://localhost:3000](http://localhost:3000)
+- Backend API: [http://localhost:3001/docs](http://localhost:3001/docs)
+- Prisma Studio: [http://localhost:5555](http://localhost:5555)
+
+
+> To see and access the admin database, you need to open the database and make yourself an admin. This can be done through the Prisma Studio.
+
+## Local Development Setup
+
 ### Prerequisites
 - Node.js (v16+ recommended)
 - PostgreSQL database
@@ -127,56 +162,36 @@ npm install
 ```
 
 ### 3. Set up environment variables
-- **Frontend**: `packages/frontend/.env` (see example in frontend README)
 - **Backend**: `packages/backend/.env` (see `.env.example`)
 
+> If you dont have an azure account, don't add images when creating events (It is not required)
+
 ### 4. Set up the database
-- Create a PostgreSQL database
+- Create a PostgreSQL database (you can use the docker compose: `docker compose up database`)
 - Update connection string in `packages/backend/.env`
 
-### 5. Generate Prisma client and run migrations
+### 5. Generate Prisma client and push schema
 ```sh
 cd packages/backend
 npm run prisma:generate
-npm run prisma:migrate
+npm run prisma:push
 ```
 
 ### 6. Start development servers
-- **Frontend**:
-  ```sh
-  cd packages/frontend
-  npm run dev
-  ```
-- **Backend**:
-  ```sh
-  cd packages/backend
-  npm run dev
-  ```
+```sh
+npm run dev # In the root
+```
 
 ### 7. Access the app
 - Frontend: [http://localhost:3000](http://localhost:3000)
 - Backend API: [http://localhost:3001](http://localhost:3001)
 
----
-
-## Deployment
-- Use Docker Compose or deploy packages separately as needed
-- Ensure environment variables are set for production
-- Run database migrations before starting the backend
-
----
-
-## Contributing
-1. Fork the repository
-2. Create a new branch (`git checkout -b feature/your-feature`)
-3. Commit your changes (`git commit -am 'Add new feature'`)
-4. Push to the branch (`git push origin feature/your-feature`)
-5. Open a pull request
+> To see and access the admin database, you need to open the database and make yourself an admin. This can be done through the Prisma Studio. `npm run prisma:studio # In the backend package`
 
 ---
 
 ## Additional Notes
-- **Swagger API Docs**: Visit `/api/docs` on the backend backend for interactive API documentation
+- **Swagger API Docs**: Visit `/docs` on the backend backend for interactive API documentation
 - **Shared Package**: Changes here may affect both frontend and backend; coordinate updates accordingly
 - **Testing**: Run backend tests with `npm test` in `packages/backend`
 - **Monorepo Management**: Use Turborepo for efficient builds and task running

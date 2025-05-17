@@ -20,47 +20,39 @@ import {
     LoginResponseSchema,
     GetMeResponseSchema
 } from "@events-platform/shared";
-import {
-    GetAllUsersResponseSchema,
-    GetUserByIdResponseSchema,
-    CreateUserRequestSchema,
-    CreateUserResponseSchema,
-    UpdateUserRequestSchema,
-    UpdateUserResponseSchema
-} from "@events-platform/shared";
 
 // --- Examples for Events DTOs ---
-const GetAllEventsResponseExample = [
-    {
-        id: "evt1",
-        name: "Annual Tech Conference",
-        description: "A conference about the latest in tech.",
-        category: "Technology",
-        date: new Date("2024-09-01T09:00:00Z"),
-        venue: "Tech Hall, City Center",
-        price: 99.99,
-        image: "https://example.com/event1.jpg",
-        createdAt: new Date("2024-07-01T10:00:00Z"),
-        updatedAt: new Date("2024-07-10T12:00:00Z"),
-        registrations: [
-            {
-                id: "reg1",
-                user: {
-                    id: "user1",
-                    name: "Alice",
-                    email: "alice@example.com"
-                }
+const GetAllEventsResponseExample = {
+    data: [
+        {
+            id: "evt1",
+            name: "Annual Tech Conference",
+            description: "A conference about the latest in tech.",
+            category: "Technology",
+            date: new Date("2024-09-01T09:00:00Z"),
+            venue: "Tech Hall, City Center",
+            price: 99.99,
+            image: "https://example.com/event1.jpg",
+            createdAt: new Date("2024-07-01T10:00:00Z"),
+            updatedAt: new Date("2024-07-10T12:00:00Z"),
+            registrationCount: 42,
+            isRegistered: false,
+            organizer: {
+                id: "org1",
+                name: "Bob",
+                email: "bob@org.com"
             }
-        ],
-        organizer: {
-            id: "org1",
-            name: "Bob",
-            email: "bob@org.com"
         }
+    ],
+    pagination: {
+        page: 1,
+        limit: 10,
+        total: 1,
+        totalPages: 1
     }
-];
+};
 
-const GetEventByIdResponseExample = GetAllEventsResponseExample[0];
+const GetEventByIdResponseExample = GetAllEventsResponseExample['data'][0];
 
 const RegisterForEventRequestExample = {
     userId: "user1"
@@ -75,20 +67,28 @@ const CancelRegistrationResponseExample = {
 } as const;
 
 // --- Examples for Admin DTOs ---
-const AdminGetAllEventsResponseExample = [
-    {
-        id: "evt1",
-        name: "Annual Tech Conference",
-        description: "A conference about the latest in tech.",
-        category: "Technology",
-        date: new Date("2024-09-01T09:00:00Z"),
-        venue: "Tech Hall, City Center",
-        price: 99.99,
-        image: "https://example.com/event1.jpg",
-        createdAt: new Date("2024-07-01T10:00:00Z"),
-        updatedAt: new Date("2024-07-10T12:00:00Z")
+const AdminGetAllEventsResponseExample = {
+    data: [
+        {
+            id: "evt1",
+            name: "Annual Tech Conference",
+            description: "A conference about the latest in tech.",
+            category: "Technology",
+            date: new Date("2024-09-01T09:00:00Z"),
+            venue: "Tech Hall, City Center",
+            price: 99.99,
+            image: "https://example.com/event1.jpg",
+            createdAt: new Date("2024-07-01T10:00:00Z"),
+            updatedAt: new Date("2024-07-10T12:00:00Z")
+        }
+    ],
+    pagination: {
+        page: 1,
+        limit: 10,
+        total: 1,
+        totalPages: 1
     }
-];
+};
 
 const AdminCreateEventRequestExample = {
     name: "New Event",
@@ -276,36 +276,4 @@ export const AllSchemasWithExamples = {
             example: GetMeResponseExample satisfies z.infer<typeof GetMeResponseSchema>
         }
     },
-    GetAllUsers: {
-        response: {
-            schema: GetAllUsersResponseSchema,
-            example: GetAllUsersResponseExample satisfies z.infer<typeof GetAllUsersResponseSchema>
-        }
-    },
-    GetUserById: {
-        response: {
-            schema: GetUserByIdResponseSchema,
-            example: GetUserByIdResponseExample satisfies z.infer<typeof GetUserByIdResponseSchema>
-        }
-    },
-    CreateUser: {
-        request: {
-            schema: CreateUserRequestSchema,
-            example: CreateUserRequestExample satisfies z.infer<typeof CreateUserRequestSchema>
-        },
-        response: {
-            schema: CreateUserResponseSchema,
-            example: CreateUserResponseExample satisfies z.infer<typeof CreateUserResponseSchema>
-        }
-    },
-    UpdateUser: {
-        request: {
-            schema: UpdateUserRequestSchema,
-            example: UpdateUserRequestExample satisfies z.infer<typeof UpdateUserRequestSchema>
-        },
-        response: {
-            schema: UpdateUserResponseSchema,
-            example: UpdateUserResponseExample satisfies z.infer<typeof UpdateUserResponseSchema>
-        }
-    }
 } as const;
