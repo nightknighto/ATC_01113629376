@@ -1,11 +1,21 @@
+import type {
+    ApiError,
+    GetMeResponse,
+    LoginRequest,
+    LoginResponse,
+    RegisterRequest,
+    RegisterResponse,
+} from '@events-platform/shared';
 import bcrypt from 'bcryptjs';
-import { RegisterRequest, RegisterResponse, LoginRequest, LoginResponse, GetMeResponse, ApiError } from '@events-platform/shared';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { UserModel } from '../models';
 import { JwtService } from '../services';
 
 export namespace AuthController {
-    export const register = async (req: Request<{}, RegisterResponse, RegisterRequest>, res: Response<RegisterResponse | ApiError>) => {
+    export const register = async (
+        req: Request<{}, RegisterResponse, RegisterRequest>,
+        res: Response<RegisterResponse | ApiError>,
+    ) => {
         try {
             const { name, email, password } = req.body;
             const existingUser = await UserModel.findByEmail(email);
@@ -32,7 +42,10 @@ export namespace AuthController {
         }
     };
 
-    export const login = async (req: Request<{}, LoginResponse, LoginRequest>, res: Response<LoginResponse | ApiError>) => {
+    export const login = async (
+        req: Request<{}, LoginResponse, LoginRequest>,
+        res: Response<LoginResponse | ApiError>,
+    ) => {
         try {
             const { email, password } = req.body;
             const user = await UserModel.findByEmail(email);
@@ -70,7 +83,7 @@ export namespace AuthController {
             const token = authHeader.split(' ')[1];
             try {
                 const user = JwtService.verifyToken(token);
-                
+
                 res.json(user);
             } catch (error) {
                 return res.status(401).json({ error: 'Invalid token' });

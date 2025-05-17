@@ -1,12 +1,12 @@
-import express from 'express';
 import cors from 'cors';
-import mainRouter from './routes';
-import { rateLimiter } from './middleware/rate-limiter.middleware';
+import express from 'express';
 import { CONFIG } from './config';
+import { rateLimiter } from './middleware/rate-limiter.middleware';
+import mainRouter from './routes';
 
 // Create Express app
 const app = express();
-const PORT = CONFIG.server.port
+const PORT = CONFIG.server.port;
 
 // Use rate limiter globally
 app.use(rateLimiter);

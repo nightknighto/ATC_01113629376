@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import type { GetMeResponse } from '@events-platform/shared';
+import type React from 'react';
+import { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
 import { authAPI } from '../services/api';
-import { GetMeResponse } from '@events-platform/shared';
 
 type User = GetMeResponse;
 
@@ -69,7 +70,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setError(null);
         } catch (err: any) {
             console.error('Login error:', err);
-            setError(err.response?.data?.error || 'Failed to login. Please check your credentials.');
+            setError(
+                err.response?.data?.error || 'Failed to login. Please check your credentials.',
+            );
             throw err;
         } finally {
             setLoading(false);
@@ -79,7 +82,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const register = async (name: string, email: string, password: string) => {
         try {
             setLoading(true);
-            const { user: userData, token: authToken } = await authAPI.register(name, email, password);
+            const { user: userData, token: authToken } = await authAPI.register(
+                name,
+                email,
+                password,
+            );
             setUser(userData);
             setToken(authToken);
             localStorage.setItem('token', authToken);

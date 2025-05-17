@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // Common User fields
 export const UserBaseSchema = z.object({
@@ -7,9 +7,9 @@ export const UserBaseSchema = z.object({
     email: z.string().email(),
     createdAt: z.date(),
     updatedAt: z.date(),
-    role: z.enum(['user', 'admin'])
+    role: z.enum(['user', 'admin']),
 });
 
 export const UserWithPasswordBaseSchema = UserBaseSchema.extend({
-    password: z.string()
+    password: z.string(),
 });

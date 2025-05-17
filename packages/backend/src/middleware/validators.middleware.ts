@@ -1,4 +1,4 @@
-import { ApiError } from '@events-platform/shared';
+import type { ApiError } from '@events-platform/shared';
 import type { NextFunction, Request, Response } from 'express';
 import { ZodError, type z } from 'zod';
 
@@ -25,7 +25,7 @@ export namespace Validators {
                     }));
 
                     res.status(400).json({
-                        error: `Invalid request data for ${key}: ${errorMessages.map(e => e.message).join(', ')}`,
+                        error: `Invalid request data for ${key}: ${errorMessages.map((e) => e.message).join(', ')}`,
                     });
                 } else {
                     res.status(500).json({

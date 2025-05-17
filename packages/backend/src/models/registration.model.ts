@@ -1,11 +1,14 @@
-import { prisma } from "../prisma";
+import { prisma } from '../prisma';
 
 export namespace RegistrationModel {
     export const create = async (data: any) => {
         return await prisma.registration.create({ data });
     };
 
-    export const createWithDetails = async (data: { eventId: string; userId: string }) => {
+    export const createWithDetails = async (data: {
+        eventId: string;
+        userId: string;
+    }) => {
         return await prisma.registration.create({
             data,
             include: {
@@ -40,7 +43,10 @@ export namespace RegistrationModel {
         });
     };
 
-    export const findByEventIdWithUser = async (eventId: string, options?: { skip?: number; take?: number }) => {
+    export const findByEventIdWithUser = async (
+        eventId: string,
+        options?: { skip?: number; take?: number },
+    ) => {
         return await prisma.registration.findMany({
             where: { eventId },
             skip: options?.skip,
@@ -57,7 +63,10 @@ export namespace RegistrationModel {
         });
     };
 
-    export const findFirst = async (filter: { eventId: string; userId: string }) => {
+    export const findFirst = async (filter: {
+        eventId: string;
+        userId: string;
+    }) => {
         return await prisma.registration.findFirst({
             where: {
                 eventId: filter.eventId,

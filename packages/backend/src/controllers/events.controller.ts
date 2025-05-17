@@ -1,41 +1,55 @@
-import { Request, Response } from 'express';
-import { GetAllEventsResponse, GetEventByIdResponse, RegisterForEventResponse, CancelRegistrationResponse, ApiError } from '@events-platform/shared';
+import type {
+    ApiError,
+    CancelRegistrationResponse,
+    GetAllEventsResponse,
+    GetEventByIdResponse,
+    RegisterForEventResponse,
+} from '@events-platform/shared';
+import type { Request, Response } from 'express';
 import { EventModel } from '../models/event.model';
 import { RegistrationModel } from '../models/registration.model';
 
 export namespace EventsController {
-    export const getAllEvents = async (req: Request, res: Response<GetAllEventsResponse | ApiError>) => {
+    export const getAllEvents = async (
+        req: Request,
+        res: Response<GetAllEventsResponse | ApiError>,
+    ) => {
         try {
-            const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(req.query.limit as string) || 10;
+            const page = Number.parseInt(req.query.page as string) || 1;
+            const limit = Number.parseInt(req.query.limit as string) || 10;
             const skip = (page - 1) * limit;
             const search = req.query.search as string | undefined;
             const [events, total] = await Promise.all([
                 EventModel.findAllWithDetails({ skip, take: limit, search }),
-                EventModel.countAll(search)
+                EventModel.countAll(search),
             ]);
             const userId = req.user?.id;
-            const mappedEvents = await Promise.all(events.map(async (event) => {
-                let isRegistered = false;
-                if (userId) {
-                    const registration = await RegistrationModel.findFirst({ eventId: event.id, userId });
-                    isRegistered = !!registration;
-                }
-                return {
-                    ...event,
-                    registrationCount: event._count.registrations,
-                    isRegistered,
-                    _count: undefined
-                };
-            }));
+            const mappedEvents = await Promise.all(
+                events.map(async (event) => {
+                    let isRegistered = false;
+                    if (userId) {
+                        const registration = await RegistrationModel.findFirst({
+                            eventId: event.id,
+                            userId,
+                        });
+                        isRegistered = !!registration;
+                    }
+                    return {
+                        ...event,
+                        registrationCount: event._count.registrations,
+                        isRegistered,
+                        _count: undefined,
+                    };
+                }),
+            );
             res.json({
                 data: mappedEvents,
                 pagination: {
                     total,
                     page,
                     limit,
-                    totalPages: Math.ceil(total / limit)
-                }
+                    totalPages: Math.ceil(total / limit),
+                },
             });
         } catch (error) {
             console.error('Error fetching events:', error);
@@ -43,7 +57,10 @@ export namespace EventsController {
         }
     };
 
-    export const getEventById = async (req: Request<{ id: string }>, res: Response<GetEventByIdResponse | ApiError>) => {
+    export const getEventById = async (
+        req: Request<{ id: string }>,
+        res: Response<GetEventByIdResponse | ApiError>,
+    ) => {
         try {
             const { id } = req.params;
             const event = await EventModel.findByIdWithDetails(id);
@@ -53,14 +70,17 @@ export namespace EventsController {
             const userId = req.user?.id;
             let isRegistered = false;
             if (userId) {
-                const registration = await RegistrationModel.findFirst({ eventId: event.id, userId });
+                const registration = await RegistrationModel.findFirst({
+                    eventId: event.id,
+                    userId,
+                });
                 isRegistered = !!registration;
             }
             const mappedEvent = {
                 ...event,
                 registrationCount: event._count.registrations,
                 isRegistered,
-                _count: undefined
+                _count: undefined,
             };
             res.json(mappedEvent);
         } catch (error) {
@@ -71,12 +91,15 @@ export namespace EventsController {
 
     export const getEventRegistrations = async (req: Request<{ id: string }>, res: Response) => {
         try {
-            const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(req.query.limit as string) || 10;
+            const page = Number.parseInt(req.query.page as string) || 1;
+            const limit = Number.parseInt(req.query.limit as string) || 10;
             const skip = (page - 1) * limit;
             const [registrations, total] = await Promise.all([
-                RegistrationModel.findByEventIdWithUser(req.params.id, { skip, take: limit }),
-                RegistrationModel.countByEventId(req.params.id)
+                RegistrationModel.findByEventIdWithUser(req.params.id, {
+                    skip,
+                    take: limit,
+                }),
+                RegistrationModel.countByEventId(req.params.id),
             ]);
             res.json({
                 data: registrations,
@@ -84,8 +107,8 @@ export namespace EventsController {
                     total,
                     page,
                     limit,
-                    totalPages: Math.ceil(total / limit)
-                }
+                    totalPages: Math.ceil(total / limit),
+                },
             });
         } catch (error) {
             console.error('Error fetching registrations:', error);
@@ -93,7 +116,10 @@ export namespace EventsController {
         }
     };
 
-    export const registerForEvent = async (req: Request<{ id: string }>, res: Response<RegisterForEventResponse | ApiError>) => {
+    export const registerForEvent = async (
+        req: Request<{ id: string }>,
+        res: Response<RegisterForEventResponse | ApiError>,
+    ) => {
         try {
             const { id } = req.params;
 
@@ -105,7 +131,7 @@ export namespace EventsController {
             });
 
             res.status(201).json({
-                success: true
+                success: true,
             });
         } catch (error) {
             console.error('Error registering for event:', error);
@@ -113,7 +139,10 @@ export namespace EventsController {
         }
     };
 
-    export const cancelRegistration = async (req: Request<{ id: string }>, res: Response<CancelRegistrationResponse | ApiError>) => {
+    export const cancelRegistration = async (
+        req: Request<{ id: string }>,
+        res: Response<CancelRegistrationResponse | ApiError>,
+    ) => {
         try {
             const { id } = req.params;
 

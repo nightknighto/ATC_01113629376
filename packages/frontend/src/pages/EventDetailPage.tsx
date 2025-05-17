@@ -1,9 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { adminAPI, eventsAPI } from '../services/api';
+import type { GetEventByIdResponse, GetEventRegistrationsResponse } from '@events-platform/shared';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import {
+    Alert,
+    Badge,
+    Button,
+    Card,
+    Col,
+    Container,
+    ListGroup,
+    Row,
+    Spinner,
+} from 'react-bootstrap';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { GetEventByIdResponse, GetEventRegistrationsResponse } from '@events-platform/shared';
-import { Card, Button, Container, Row, Col, Spinner, Alert, ListGroup, Badge } from 'react-bootstrap';
+import { adminAPI, eventsAPI } from '../services/api';
 
 const EventDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -26,7 +37,8 @@ const EventDetailPage: React.FC = () => {
     useEffect(() => {
         if (event && event.registrationCount > 0) {
             setLoadingRegistrations(true);
-            eventsAPI.getEventRegistrations(event.id, regPage, regLimit)
+            eventsAPI
+                .getEventRegistrations(event.id, regPage, regLimit)
                 .then((res) => {
                     setRegistrations(res.data);
                     setRegTotal(res.pagination.total);
@@ -114,7 +126,11 @@ const EventDetailPage: React.FC = () => {
     const handleDeleteEvent = async () => {
         if (!event || !isOrganizer) return;
 
-        if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+        if (
+            window.confirm(
+                'Are you sure you want to delete this event? This action cannot be undone.',
+            )
+        ) {
             try {
                 await adminAPI.deleteEvent(event.id);
                 navigate('/events');
@@ -127,7 +143,10 @@ const EventDetailPage: React.FC = () => {
 
     if (loading) {
         return (
-            <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
+            <Container
+                className="d-flex justify-content-center align-items-center"
+                style={{ minHeight: '60vh' }}
+            >
                 <Spinner animation="border" />
             </Container>
         );
@@ -164,12 +183,16 @@ const EventDetailPage: React.FC = () => {
                 <Col md={8} lg={7}>
                     <Card className="shadow-lg border-0">
                         <Card.Body>
-                            <Card.Title as="h2" className="mb-3 text-primary">{event.name}</Card.Title>
+                            <Card.Title as="h2" className="mb-3 text-primary">
+                                {event.name}
+                            </Card.Title>
                             <Card.Subtitle className="mb-3 text-muted">
                                 <i className="bi bi-calendar-event me-2"></i>
                                 {formattedDate}
                             </Card.Subtitle>
-                            <Card.Text className="mb-4" style={{ minHeight: 60 }}>{event.description}</Card.Text>
+                            <Card.Text className="mb-4" style={{ minHeight: 60 }}>
+                                {event.description}
+                            </Card.Text>
                             <Row className="mb-3">
                                 <Col md={6} className="mb-2">
                                     <i className="bi bi-tags me-1"></i>
@@ -187,7 +210,8 @@ const EventDetailPage: React.FC = () => {
                                 </Col>
                                 <Col md={6} className="mb-2">
                                     <i className="bi bi-person me-1"></i>
-                                    <strong>Organizer:</strong> {event.organizer.name} <Badge bg="secondary">{event.organizer.email}</Badge>
+                                    <strong>Organizer:</strong> {event.organizer.name}{' '}
+                                    <Badge bg="secondary">{event.organizer.email}</Badge>
                                 </Col>
                             </Row>
                             <div className="mb-3">
@@ -203,11 +227,26 @@ const EventDetailPage: React.FC = () => {
                                             objectFit: 'cover',
                                             borderRadius: 12,
                                             boxShadow: '0 2px 12px #0002',
-                                            marginBottom: 24
+                                            marginBottom: 24,
                                         }}
                                     />
                                 ) : (
-                                    <div style={{ width: '100%', maxWidth: 480, aspectRatio: '3/2', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: 24, borderRadius: 12, boxShadow: '0 2px 12px #0002', marginBottom: 24 }}>
+                                    <div
+                                        style={{
+                                            width: '100%',
+                                            maxWidth: 480,
+                                            aspectRatio: '3/2',
+                                            background: '#eee',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: '#888',
+                                            fontSize: 24,
+                                            borderRadius: 12,
+                                            boxShadow: '0 2px 12px #0002',
+                                            marginBottom: 24,
+                                        }}
+                                    >
                                         No Image
                                     </div>
                                 )}
@@ -223,18 +262,33 @@ const EventDetailPage: React.FC = () => {
                                         registrations.map((registration) => (
                                             <ListGroup.Item key={registration.id}>
                                                 <i className="bi bi-person-circle me-2"></i>
-                                                {registration.user.name} <span className="text-muted">({registration.user.email})</span>
+                                                {registration.user.name}{' '}
+                                                <span className="text-muted">
+                                                    ({registration.user.email})
+                                                </span>
                                             </ListGroup.Item>
                                         ))
                                     )}
                                 </ListGroup>
                                 {regTotalPages > 1 && (
                                     <div className="d-flex justify-content-center align-items-center mt-3 gap-2">
-                                        <Button size="sm" variant="outline-primary" disabled={regPage === 1} onClick={() => setRegPage(regPage - 1)}>
+                                        <Button
+                                            size="sm"
+                                            variant="outline-primary"
+                                            disabled={regPage === 1}
+                                            onClick={() => setRegPage(regPage - 1)}
+                                        >
                                             Previous
                                         </Button>
-                                        <span>Page {regPage} of {regTotalPages}</span>
-                                        <Button size="sm" variant="outline-primary" disabled={regPage === regTotalPages} onClick={() => setRegPage(regPage + 1)}>
+                                        <span>
+                                            Page {regPage} of {regTotalPages}
+                                        </span>
+                                        <Button
+                                            size="sm"
+                                            variant="outline-primary"
+                                            disabled={regPage === regTotalPages}
+                                            onClick={() => setRegPage(regPage + 1)}
+                                        >
                                             Next
                                         </Button>
                                     </div>
@@ -242,13 +296,23 @@ const EventDetailPage: React.FC = () => {
                             </div>
                             <div className="d-flex gap-2 flex-wrap">
                                 {!isOrganizer && !isRegistered && user && (
-                                    <Button variant="success" onClick={handleRegister} disabled={registering}>
+                                    <Button
+                                        variant="success"
+                                        onClick={handleRegister}
+                                        disabled={registering}
+                                    >
                                         {registering ? 'Registering...' : 'Register for Event'}
                                     </Button>
                                 )}
                                 {!isOrganizer && isRegistered && user && (
-                                    <Button variant="danger" onClick={handleCancelRegistration} disabled={cancelingRegistration}>
-                                        {cancelingRegistration ? 'Canceling...' : 'Cancel Registration'}
+                                    <Button
+                                        variant="danger"
+                                        onClick={handleCancelRegistration}
+                                        disabled={cancelingRegistration}
+                                    >
+                                        {cancelingRegistration
+                                            ? 'Canceling...'
+                                            : 'Cancel Registration'}
                                     </Button>
                                 )}
                                 {isOrganizer && (

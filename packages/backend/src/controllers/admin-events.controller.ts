@@ -1,23 +1,34 @@
-import { Request, Response } from 'express';
-import { AdminCreateEventRequest, AdminCreateEventResponse, AdminUpdateEventRequest, AdminUpdateEventResponse, AdminGetAllEventsResponse, AdminDeleteEventResponse, ApiError } from '@events-platform/shared';
-import { EventModel } from '../models/event.model';
-import { MulterService } from '../services/multer.service';
-import { AzureService } from '../services/azure.service';
+import type {
+    AdminCreateEventRequest,
+    AdminCreateEventResponse,
+    AdminDeleteEventResponse,
+    AdminGetAllEventsResponse,
+    AdminUpdateEventRequest,
+    AdminUpdateEventResponse,
+    ApiError,
+} from '@events-platform/shared';
+import type { Request, Response } from 'express';
 import { CONFIG } from '../config';
+import { EventModel } from '../models/event.model';
+import { AzureService } from '../services/azure.service';
+import { MulterService } from '../services/multer.service';
 
 export namespace AdminEventsController {
-    export const getAllEvents = async (req: Request, res: Response<AdminGetAllEventsResponse | ApiError>) => {
+    export const getAllEvents = async (
+        req: Request,
+        res: Response<AdminGetAllEventsResponse | ApiError>,
+    ) => {
         try {
-            const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(req.query.limit as string) || 10;
+            const page = Number.parseInt(req.query.page as string) || 1;
+            const limit = Number.parseInt(req.query.limit as string) || 10;
             const skip = (page - 1) * limit;
             const search = req.query.search as string | undefined;
             const [events, total] = await Promise.all([
                 EventModel.findAllWithDetails({ skip, take: limit, search }),
-                EventModel.countAll(search)
+                EventModel.countAll(search),
             ]);
             // Map registration count to registrationCount property
-            const mapped = events.map(e => ({
+            const mapped = events.map((e) => ({
                 ...e,
                 registrationCount: e._count.registrations,
             }));
@@ -27,8 +38,8 @@ export namespace AdminEventsController {
                     total,
                     page,
                     limit,
-                    totalPages: Math.ceil(total / limit)
-                }
+                    totalPages: Math.ceil(total / limit),
+                },
             });
         } catch (error) {
             console.error('AdminEventsController.getAll error:', error);
@@ -37,7 +48,10 @@ export namespace AdminEventsController {
     };
 
     // Create event (JSON, no image)
-    export const createEvent = async (req: Request<{}, AdminCreateEventResponse, AdminCreateEventRequest>, res: Response<AdminCreateEventResponse | ApiError>) => {
+    export const createEvent = async (
+        req: Request<{}, AdminCreateEventResponse, AdminCreateEventRequest>,
+        res: Response<AdminCreateEventResponse | ApiError>,
+    ) => {
         try {
             const data = req.body;
             const eventDate = new Date(data.date);
@@ -89,15 +103,21 @@ export namespace AdminEventsController {
                 console.error('AdminEventsController.uploadEventImage error:', error);
                 res.status(400).json({ error: 'Failed to upload image' });
             }
-        }
+        },
     ];
 
-    export const updateEvent = async (req: Request<{ id: string }, AdminUpdateEventResponse, AdminUpdateEventRequest>, res: Response<AdminUpdateEventResponse | ApiError>) => {
+    export const updateEvent = async (
+        req: Request<{ id: string }, AdminUpdateEventResponse, AdminUpdateEventRequest>,
+        res: Response<AdminUpdateEventResponse | ApiError>,
+    ) => {
         try {
             const { id } = req.params;
             const data = req.body;
             // Always convert date to Date object if present
-            let updateData = { ...data, date: data.date ? new Date(data.date) : undefined };
+            const updateData = {
+                ...data,
+                date: data.date ? new Date(data.date) : undefined,
+            };
             if (updateData.date) {
                 const eventDate = updateData.date;
                 if (isNaN(eventDate.getTime()) || eventDate < new Date()) {
@@ -119,7 +139,10 @@ export namespace AdminEventsController {
         }
     };
 
-    export const deleteEvent = async (req: Request<{ id: string }>, res: Response<AdminDeleteEventResponse | ApiError>) => {
+    export const deleteEvent = async (
+        req: Request<{ id: string }>,
+        res: Response<AdminDeleteEventResponse | ApiError>,
+    ) => {
         try {
             const { id } = req.params;
             await EventModel.deleteById(id);

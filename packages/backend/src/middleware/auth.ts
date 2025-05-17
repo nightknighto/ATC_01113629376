@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { USER_ROLE } from '@prisma/client';
+import type { USER_ROLE } from '@prisma/client';
+import type { NextFunction, Request, Response } from 'express';
 import { JwtService } from '../services';
 
 // Extend Express Request type to include user
@@ -53,7 +53,7 @@ const authenticate = (isRequired = true) => {
             } catch (error) {
                 if (!isRequired) {
                     next();
-                    return
+                    return;
                 }
                 return res.status(401).json({ error: 'Invalid token' });
             }

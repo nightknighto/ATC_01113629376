@@ -1,6 +1,6 @@
-import { z } from "zod";
-import { EventBaseSchema } from "./events.dto";
-import { paginateResponse } from "./pagination.dto";
+import { z } from 'zod';
+import { EventBaseSchema } from './events.dto';
+import { paginateResponse } from './pagination.dto';
 
 // Common Event fields for admin
 export const AdminEventBaseSchema = EventBaseSchema.omit({
@@ -13,7 +13,13 @@ export const AdminGetAllEventsResponseSchema = paginateResponse(z.array(AdminEve
 export type AdminGetAllEventsResponse = z.infer<typeof AdminGetAllEventsResponseSchema>;
 
 // Create event (admin) request (JSON, no image)
-export const AdminCreateEventRequestSchema = AdminEventBaseSchema.omit({ id: true, createdAt: true, updatedAt: true, date: true, image: true }).extend({
+export const AdminCreateEventRequestSchema = AdminEventBaseSchema.omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true,
+    date: true,
+    image: true,
+}).extend({
     date: z.string().datetime(),
 });
 export type AdminCreateEventRequest = z.infer<typeof AdminCreateEventRequestSchema>;

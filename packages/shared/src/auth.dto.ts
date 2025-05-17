@@ -1,18 +1,18 @@
-import { z } from "zod";
-import { UserWithPasswordBaseSchema } from "./users.dto";
+import { z } from 'zod';
+import { UserWithPasswordBaseSchema } from './users.dto';
 
 // Common Auth fields
 export const AuthUserSchema = UserWithPasswordBaseSchema.omit({
     createdAt: true,
     updatedAt: true,
-})
+});
 
 // Register request
 export const RegisterRequestSchema = AuthUserSchema.pick({
     name: true,
     email: true,
     password: true,
-})
+});
 
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
 
@@ -27,8 +27,8 @@ export type RegisterResponse = z.infer<typeof RegisterResponseSchema>;
 // Login request
 export const LoginRequestSchema = AuthUserSchema.pick({
     email: true,
-    password: true
-})
+    password: true,
+});
 
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 
@@ -40,5 +40,5 @@ export const LoginResponseSchema = z.object({
 export type LoginResponse = z.infer<typeof LoginResponseSchema>;
 
 // GetMe response
-export const GetMeResponseSchema = AuthUserSchema.omit({ password: true });;
+export const GetMeResponseSchema = AuthUserSchema.omit({ password: true });
 export type GetMeResponse = z.infer<typeof GetMeResponseSchema>;
