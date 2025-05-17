@@ -1,9 +1,16 @@
-import type { AdminGetAllEventsResponse } from '@events-platform/shared';
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Container, Form, Modal, Spinner, Table } from 'react-bootstrap';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Table, Button, Container, Modal, Form, Alert, Spinner } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
-import { adminAPI } from '../services/api';
+import { adminAPI, api, eventsAPI } from '../services/api';
+import { useLocation, useNavigate } from 'react-router-dom';
+import {
+    AdminGetAllEventsResponse,
+    AdminCreateEventRequest,
+    AdminCreateEventResponse,
+    AdminUpdateEventRequest,
+    AdminUpdateEventResponse,
+    AdminDeleteEventResponse,
+} from '@events-platform/shared';
 
 interface ModalEventState {
     name: string;
@@ -42,9 +49,7 @@ const AdminPage: React.FC = () => {
     const navigate = useNavigate();
 
     const [events, setEvents] = useState<AdminGetAllEventsResponse['data']>([]);
-    const [pagination, setPagination] = useState<AdminGetAllEventsResponse['pagination'] | null>(
-        null,
-    );
+    const [pagination, setPagination] = useState<AdminGetAllEventsResponse['pagination'] | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showModal, setShowModal] = useState(false);
@@ -60,7 +65,7 @@ const AdminPage: React.FC = () => {
     // Initialize page from URL param (only on first render)
     const getInitialPage = () => {
         const params = new URLSearchParams(window.location.search);
-        const pageParam = Number.parseInt(params.get('page') || '1', 10);
+        const pageParam = parseInt(params.get('page') || '1', 10);
         return isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
     };
     const [page, setPage] = useState(getInitialPage);
@@ -100,7 +105,7 @@ const AdminPage: React.FC = () => {
         const params = new URLSearchParams(location.search);
         const editId = params.get('edit');
         if (editId && events.length > 0) {
-            const event = events.find((e) => e.id === editId);
+            const event = events.find(e => e.id === editId);
             if (event && !showModal) {
                 setModalEvent({
                     name: event.name,
@@ -122,7 +127,7 @@ const AdminPage: React.FC = () => {
     // Only update state from URL if the param actually changes (avoid infinite loop)
     useEffect(() => {
         const params = new URLSearchParams(location.search);
-        const pageParam = Number.parseInt(params.get('page') || '1', 10);
+        const pageParam = parseInt(params.get('page') || '1', 10);
         if (pageParam !== page && !isNaN(pageParam) && pageParam > 0) {
             setPage(pageParam);
         }
@@ -132,7 +137,7 @@ const AdminPage: React.FC = () => {
     // Update URL when page changes (but not on first mount)
     useEffect(() => {
         const params = new URLSearchParams(location.search);
-        if (page !== Number.parseInt(params.get('page') || '1', 10)) {
+        if (page !== parseInt(params.get('page') || '1', 10)) {
             params.set('page', String(page));
             navigate({ search: params.toString() }, { replace: true });
         }
@@ -172,7 +177,7 @@ const AdminPage: React.FC = () => {
         if (!window.confirm('Are you sure you want to delete this event?')) return;
         try {
             await adminAPI.deleteEvent(id);
-            setEvents(events.filter((e) => e.id !== id));
+            setEvents(events.filter(e => e.id !== id));
         } catch (err: any) {
             let message = 'Failed to delete event';
             if (err.response && err.response.data && err.response.data.error) {
@@ -187,13 +192,9 @@ const AdminPage: React.FC = () => {
     const handleModalChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type, files } = e.target as HTMLInputElement;
         if (type === 'file' && files && files.length > 0) {
-            setModalEvent((ev) => ({
-                ...ev,
-                imageFile: files[0],
-                image: URL.createObjectURL(files[0]),
-            }));
+            setModalEvent(ev => ({ ...ev, imageFile: files[0], image: URL.createObjectURL(files[0]) }));
         } else {
-            setModalEvent((ev) => ({ ...ev, [name]: value }));
+            setModalEvent(ev => ({ ...ev, [name]: value }));
         }
     };
 
@@ -225,17 +226,14 @@ const AdminPage: React.FC = () => {
                     category: modalEvent.category,
                     date: new Date(modalEvent.date).toISOString(),
                     venue: modalEvent.venue,
-                    price: Number(modalEvent.price),
+                    price: Number(modalEvent.price)
                 };
                 const data = await adminAPI.updateEvent(editEventId, eventData);
                 if (modalEvent.imageFile) {
-                    const imgRes = await adminAPI.uploadEventImage(
-                        editEventId,
-                        modalEvent.imageFile,
-                    );
+                    const imgRes = await adminAPI.uploadEventImage(editEventId, modalEvent.imageFile);
                     data.image = imgRes.image;
                 }
-                setEvents(events.map((e) => (e.id === editEventId ? data : e)));
+                setEvents(events.map(e => (e.id === editEventId ? data : e)));
             }
             setShowModal(false);
             setEditEventId(null);
@@ -279,27 +277,20 @@ const AdminPage: React.FC = () => {
                     style={{ minWidth: 240 }}
                     placeholder="Search events by name..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onBlur={(e) => {
+                    onChange={e => setSearch(e.target.value)}
+                    onBlur={e => {
                         setTimeout(() => {
-                            if (
-                                document.activeElement !== searchInputRef.current &&
-                                searchInputRef.current
-                            ) {
+                            if (document.activeElement !== searchInputRef.current && searchInputRef.current) {
                                 searchInputRef.current.focus();
                             }
                         }, 0);
                     }}
                 />
             </div>
-            <Button variant="success" className="mb-3" onClick={handleShowCreate}>
-                Create Event
-            </Button>
+            <Button variant="success" className="mb-3" onClick={handleShowCreate}>Create Event</Button>
             {error && <Alert variant="danger">{error}</Alert>}
             {loading ? (
-                <div className="text-center py-5">
-                    <Spinner animation="border" />
-                </div>
+                <div className="text-center py-5"><Spinner animation="border" /></div>
             ) : (
                 <>
                     <Table striped bordered hover responsive>
@@ -316,7 +307,7 @@ const AdminPage: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {events.map((event) => (
+                            {events.map(event => (
                                 <tr key={event.id}>
                                     <td>{event.name}</td>
                                     <td>{event.description}</td>
@@ -326,48 +317,16 @@ const AdminPage: React.FC = () => {
                                     <td>{event.price}</td>
                                     <td>
                                         {event.image ? (
-                                            <img
-                                                src={event.image}
-                                                alt={event.name}
-                                                style={{
-                                                    width: 60,
-                                                    height: 40,
-                                                    objectFit: 'cover',
-                                                }}
-                                            />
+                                            <img src={event.image} alt={event.name} style={{ width: 60, height: 40, objectFit: 'cover' }} />
                                         ) : (
-                                            <div
-                                                style={{
-                                                    width: 60,
-                                                    height: 40,
-                                                    background: '#eee',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    color: '#888',
-                                                    fontSize: 12,
-                                                }}
-                                            >
+                                            <div style={{ width: 60, height: 40, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', fontSize: 12 }}>
                                                 No Image
                                             </div>
                                         )}
                                     </td>
                                     <td>
-                                        <Button
-                                            variant="primary"
-                                            size="sm"
-                                            className="me-2"
-                                            onClick={() => handleShowEdit(event)}
-                                        >
-                                            Edit
-                                        </Button>
-                                        <Button
-                                            variant="danger"
-                                            size="sm"
-                                            onClick={() => handleDelete(event.id)}
-                                        >
-                                            Delete
-                                        </Button>
+                                        <Button variant="primary" size="sm" className="me-2" onClick={() => handleShowEdit(event)}>Edit</Button>
+                                        <Button variant="danger" size="sm" onClick={() => handleDelete(event.id)}>Delete</Button>
                                     </td>
                                 </tr>
                             ))}
@@ -375,23 +334,11 @@ const AdminPage: React.FC = () => {
                     </Table>
                     {pagination && pagination.totalPages > 1 && (
                         <div className="d-flex justify-content-center align-items-center mt-4 gap-2">
-                            <Button
-                                variant="outline-primary"
-                                size="sm"
-                                disabled={page === 1}
-                                onClick={() => handlePageChange(page - 1)}
-                            >
+                            <Button variant="outline-primary" size="sm" disabled={page === 1} onClick={() => handlePageChange(page - 1)}>
                                 Previous
                             </Button>
-                            <span>
-                                Page {pagination.page} of {pagination.totalPages}
-                            </span>
-                            <Button
-                                variant="outline-primary"
-                                size="sm"
-                                disabled={page === pagination.totalPages}
-                                onClick={() => handlePageChange(page + 1)}
-                            >
+                            <span>Page {pagination.page} of {pagination.totalPages}</span>
+                            <Button variant="outline-primary" size="sm" disabled={page === pagination.totalPages} onClick={() => handlePageChange(page + 1)}>
                                 Next
                             </Button>
                         </div>
@@ -401,9 +348,7 @@ const AdminPage: React.FC = () => {
             <Modal show={showModal} onHide={() => setShowModal(false)}>
                 <Form onSubmit={handleModalSave}>
                     <Modal.Header closeButton>
-                        <Modal.Title>
-                            {modalType === 'create' ? 'Create Event' : 'Edit Event'}
-                        </Modal.Title>
+                        <Modal.Title>{modalType === 'create' ? 'Create Event' : 'Edit Event'}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
                         <Form.Group className="mb-3" controlId="name">
@@ -478,30 +423,13 @@ const AdminPage: React.FC = () => {
                                 required={false}
                             />
                             {modalEvent.image && (
-                                <img
-                                    src={modalEvent.image}
-                                    alt="Preview"
-                                    style={{
-                                        width: 120,
-                                        height: 80,
-                                        objectFit: 'cover',
-                                        marginTop: 8,
-                                    }}
-                                />
+                                <img src={modalEvent.image} alt="Preview" style={{ width: 120, height: 80, objectFit: 'cover', marginTop: 8 }} />
                             )}
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button
-                            variant="secondary"
-                            onClick={() => setShowModal(false)}
-                            disabled={saving}
-                        >
-                            Cancel
-                        </Button>
-                        <Button type="submit" variant="primary" disabled={saving}>
-                            {saving ? 'Saving...' : 'Save'}
-                        </Button>
+                        <Button variant="secondary" onClick={() => setShowModal(false)} disabled={saving}>Cancel</Button>
+                        <Button type="submit" variant="primary" disabled={saving}>{saving ? 'Saving...' : 'Save'}</Button>
                     </Modal.Footer>
                 </Form>
             </Modal>

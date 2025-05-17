@@ -1,7 +1,7 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const ApiErrorSchema = z.object({
-    error: z.string(),
-});
+    error: z.string()
+})
 
-export type ApiError = z.infer<typeof ApiErrorSchema>;
+export type ApiError = z.infer<typeof ApiErrorSchema>

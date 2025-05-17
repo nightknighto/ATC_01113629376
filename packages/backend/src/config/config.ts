@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { z } from 'zod';
 
 const reqString = (message: string) => z.string({ required_error: message }).min(1, { message });
@@ -24,16 +26,14 @@ const isProduction = process.env.NODE_ENV === 'production';
 const rawConfig = {
     server: {
         port: process.env.PORT,
-        apiBaseUrl: isProduction
-            ? process.env.API_BASE_URL
-            : `http://localhost:${process.env.PORT || defaultPort}`,
+        apiBaseUrl: isProduction ? process.env.API_BASE_URL : `http://localhost:${process.env.PORT || defaultPort}`,
         jwtSecret: process.env.JWT_SECRET,
         production: isProduction,
     },
     databaseURL: process.env.DATABASE_URL,
     azure: {
         azureStorageConnectionString: process.env.AZURE_STORAGE_CONNECTION_STRING,
-        azureContainerName: process.env.AZURE_STORAGE_CONTAINER_NAME,
+        azureContainerName: process.env.AZURE_STORAGE_CONTAINER_NAME
     },
 };
 

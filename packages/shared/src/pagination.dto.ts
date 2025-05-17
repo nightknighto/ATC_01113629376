@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // Pagination metadata schema
 export const PaginationMetaSchema = z.object({
@@ -8,7 +8,7 @@ export const PaginationMetaSchema = z.object({
     totalPages: z.number(),
 });
 
-export function paginateResponse<T extends z.ZodTypeAny>(schema: T) {
+export function paginateResponse<T extends z.ZodTypeAny> (schema: T) {
     return z.object({
         data: schema,
         pagination: PaginationMetaSchema,

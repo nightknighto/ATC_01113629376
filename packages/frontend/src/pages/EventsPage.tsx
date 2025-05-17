@@ -1,9 +1,9 @@
-import type { GetAllEventsResponse } from '@events-platform/shared';
 import React, { useEffect, useState } from 'react';
-import { Alert, Badge, Button, Card, Col, Container, Row, Spinner } from 'react-bootstrap';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Card, Button, Container, Row, Col, Spinner, Alert, Badge } from 'react-bootstrap';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { api, eventsAPI } from '../services/api';
+import { GetAllEventsResponse } from '@events-platform/shared';
 import { useAuth } from '../contexts/AuthContext';
-import { eventsAPI } from '../services/api';
 
 const EventsPage: React.FC = () => {
     const { user } = useAuth();
@@ -12,7 +12,7 @@ const EventsPage: React.FC = () => {
     // Initialize page from URL param (only on first render)
     const getInitialPage = () => {
         const params = new URLSearchParams(window.location.search);
-        const pageParam = Number.parseInt(params.get('page') || '1', 10);
+        const pageParam = parseInt(params.get('page') || '1', 10);
         return isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
     };
     // --- Fix: Only initialize search/page from URL on first mount ---
@@ -42,7 +42,7 @@ const EventsPage: React.FC = () => {
     // Only update state from URL if the param actually changes (avoid infinite loop)
     useEffect(() => {
         const params = new URLSearchParams(location.search);
-        const pageParam = Number.parseInt(params.get('page') || '1', 10);
+        const pageParam = parseInt(params.get('page') || '1', 10);
         // Only update page if it actually changed
         if (pageParam !== page && !isNaN(pageParam) && pageParam > 0) {
             setPage(pageParam);
@@ -55,13 +55,13 @@ const EventsPage: React.FC = () => {
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         let changed = false;
-        if (page !== Number.parseInt(params.get('page') || '1', 10)) {
+        if (page !== parseInt(params.get('page') || '1', 10)) {
             params.set('page', String(page));
             changed = true;
         }
         if (search !== (params.get('search') || '')) {
             params.set('search', search);
-            params.set('page', '1');
+            params.set('page', "1");
             changed = true;
         }
         if (changed) {
@@ -98,9 +98,9 @@ const EventsPage: React.FC = () => {
         setBooking(eventId);
         try {
             await eventsAPI.register(eventId, user.id);
-            setEvents((events) =>
-                events.map((ev) => (ev.id === eventId ? { ...ev, isRegistered: true } : ev)),
-            );
+            setEvents(events => events.map(ev =>
+                ev.id === eventId ? { ...ev, isRegistered: true } : ev
+            ));
             navigate('/congratulations');
         } catch (err: any) {
             let message = 'Failed to book event. Please try again.';
@@ -132,25 +132,22 @@ const EventsPage: React.FC = () => {
                     style={{ minWidth: 240 }}
                     placeholder="Search events by name..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={e => setSearch(e.target.value)}
                 />
             </div>
-            {error && <Alert variant="danger">{error}</Alert>}
+            {error && (
+                <Alert variant="danger">{error}</Alert>
+            )}
             {loading ? (
-                <div
-                    className="d-flex justify-content-center align-items-center"
-                    style={{ minHeight: '60vh' }}
-                >
+                <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
                     <Spinner animation="border" />
                 </div>
             ) : events.length === 0 ? (
-                <Alert variant="info" className="text-center">
-                    No events found. Check back later!
-                </Alert>
+                <Alert variant="info" className="text-center">No events found. Check back later!</Alert>
             ) : (
                 <>
                     <Row xs={1} md={2} lg={3} className="g-4">
-                        {events.map((event) => {
+                        {events.map(event => {
                             const isOrganizer = user && event.organizer.id === user.id;
                             const isRegistered = event.isRegistered;
                             return (
@@ -162,9 +159,7 @@ const EventsPage: React.FC = () => {
                                                 <i className="bi bi-calendar-event me-2"></i>
                                                 {new Date(event.date).toLocaleString()}
                                             </Card.Subtitle>
-                                            <Card.Text className="mb-3" style={{ minHeight: 60 }}>
-                                                {event.description}
-                                            </Card.Text>
+                                            <Card.Text className="mb-3" style={{ minHeight: 60 }}>{event.description}</Card.Text>
                                             <div className="mb-2">
                                                 <i className="bi bi-tags me-1"></i>
                                                 <strong>Category:</strong> {event.category}
@@ -189,26 +184,11 @@ const EventsPage: React.FC = () => {
                                                             aspectRatio: '3/2',
                                                             objectFit: 'cover',
                                                             borderRadius: 8,
-                                                            boxShadow: '0 2px 8px #0001',
+                                                            boxShadow: '0 2px 8px #0001'
                                                         }}
                                                     />
                                                 ) : (
-                                                    <div
-                                                        style={{
-                                                            width: '100%',
-                                                            maxWidth: 240,
-                                                            aspectRatio: '3/2',
-                                                            background: '#f8f9fa',
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'center',
-                                                            color: '#6c757d',
-                                                            fontSize: 18,
-                                                            borderRadius: 8,
-                                                            boxShadow: '0 2px 8px #0001',
-                                                            border: '1px dashed #ced4da',
-                                                        }}
-                                                    >
+                                                    <div style={{ width: '100%', maxWidth: 240, aspectRatio: '3/2', background: '#f8f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c757d', fontSize: 18, borderRadius: 8, boxShadow: '0 2px 8px #0001', border: '1px dashed #ced4da' }}>
                                                         No Image Available
                                                     </div>
                                                 )}
@@ -219,54 +199,27 @@ const EventsPage: React.FC = () => {
                                             </div>
                                             <div className="mb-3">
                                                 <i className="bi bi-people me-1"></i>
-                                                <strong>Registrations:</strong>{' '}
-                                                {event.registrationCount}
+                                                <strong>Registrations:</strong> {event.registrationCount}
                                             </div>
                                             <div className="d-flex gap-2">
-                                                <Button
-                                                    variant="primary"
-                                                    href={`/events/${event.id}`}
-                                                >
-                                                    View Details
-                                                </Button>
-                                                {user &&
-                                                    (isOrganizer ? (
-                                                        <Badge
-                                                            bg="info"
-                                                            className="align-self-center d-flex justify-content-center align-items-center"
-                                                            style={{
-                                                                height: '38px',
-                                                                minWidth: '120px',
-                                                                fontWeight: 500,
-                                                                fontSize: '1rem',
-                                                            }}
-                                                        >
+                                                <Button variant="primary" href={`/events/${event.id}`}>View Details</Button>
+                                                {user && (
+                                                    isOrganizer ? (
+                                                        <Badge bg="info" className="align-self-center d-flex justify-content-center align-items-center" style={{ height: '38px', minWidth: '120px', fontWeight: 500, fontSize: '1rem' }}>
                                                             Organized by you
                                                         </Badge>
                                                     ) : (
                                                         <Button
-                                                            variant={
-                                                                isRegistered ? 'success' : 'primary'
-                                                            }
+                                                            variant={isRegistered ? 'success' : 'primary'}
                                                             className="w-auto d-flex justify-content-center align-items-center"
-                                                            style={{
-                                                                minWidth: '120px',
-                                                                height: '38px',
-                                                                fontWeight: 500,
-                                                                fontSize: '1rem',
-                                                            }}
-                                                            disabled={
-                                                                isRegistered || booking === event.id
-                                                            }
+                                                            style={{ minWidth: '120px', height: '38px', fontWeight: 500, fontSize: '1rem' }}
+                                                            disabled={isRegistered || booking === event.id}
                                                             onClick={() => handleBook(event.id)}
                                                         >
-                                                            {isRegistered
-                                                                ? 'Booked'
-                                                                : booking === event.id
-                                                                  ? 'Booking...'
-                                                                  : 'Book Now'}
+                                                            {isRegistered ? 'Booked' : booking === event.id ? 'Booking...' : 'Book Now'}
                                                         </Button>
-                                                    ))}
+                                                    )
+                                                )}
                                             </div>
                                         </Card.Body>
                                     </Card>
@@ -276,24 +229,11 @@ const EventsPage: React.FC = () => {
                     </Row>
                     {pagination && pagination.totalPages > 1 && (
                         <div className="d-flex justify-content-center align-items-center mt-4 gap-2">
-                            <Button
-                                variant="outline-primary"
-                                size="sm"
-                                disabled={page === 1}
-                                onClick={() => handlePageChange(page - 1)}
-                            >
+                            <Button variant="outline-primary" size="sm" disabled={page === 1} onClick={() => handlePageChange(page - 1)}>
                                 Previous
                             </Button>
-                            <span>
-                                Page {page} of {pagination.totalPages}
-                            </span>
-                            <Button
-                                variant="outline-primary"
-                                size="sm"
-                                type="button"
-                                disabled={page === pagination.totalPages}
-                                onClick={() => handlePageChange(page + 1)}
-                            >
+                            <span>Page {page} of {pagination.totalPages}</span>
+                            <Button variant="outline-primary" size="sm" type='button' disabled={page === pagination.totalPages} onClick={() => handlePageChange(page + 1)}>
                                 Next
                             </Button>
                         </div>

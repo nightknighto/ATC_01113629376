@@ -1,14 +1,11 @@
-import {
-    AdminCreateEventRequestSchema,
-    AdminUpdateEventRequestSchema,
-} from '@events-platform/shared';
 import express from 'express';
-import type { ZodOpenApiOperationObject } from 'zod-openapi';
 import { AdminEventsController } from '../controllers/admin-events.controller';
 import { requireAuth } from '../middleware/auth';
 import { requireAdmin } from '../middleware/requireAdmin';
-import { Validators } from '../middleware/validators.middleware';
 import { AllSchemasWithExamples } from './openapi-example';
+import { ZodOpenApiOperationObject } from 'zod-openapi';
+import { Validators } from '../middleware/validators.middleware';
+import { AdminCreateEventRequestSchema, AdminGetAllEventsResponseSchema, AdminUpdateEventRequestSchema, AdminUpdateEventResponseSchema } from '@events-platform/shared';
 
 const adminEventsRouter = express.Router();
 
@@ -18,17 +15,9 @@ adminEventsRouter.use(requireAuth, requireAdmin);
 // Get all events (admin)
 adminEventsRouter.get('/events', AdminEventsController.getAllEvents);
 // Create event
-adminEventsRouter.post(
-    '/events',
-    Validators.validateBody(AdminCreateEventRequestSchema),
-    AdminEventsController.createEvent,
-);
+adminEventsRouter.post('/events', Validators.validateBody(AdminCreateEventRequestSchema), AdminEventsController.createEvent);
 // Update event
-adminEventsRouter.put(
-    '/events/:id',
-    Validators.validateBody(AdminUpdateEventRequestSchema),
-    AdminEventsController.updateEvent,
-);
+adminEventsRouter.put('/events/:id', Validators.validateBody(AdminUpdateEventRequestSchema), AdminEventsController.updateEvent);
 // Delete event
 adminEventsRouter.delete('/events/:id', AdminEventsController.deleteEvent);
 // Upload event image (admin, for existing event)
@@ -48,11 +37,11 @@ const adminGetAllEventsOpenApiOperation: ZodOpenApiOperationObject = {
             content: {
                 'application/json': {
                     schema: AllSchemasWithExamples.AdminGetAllEvents.response.schema,
-                    example: AllSchemasWithExamples.AdminGetAllEvents.response.example,
-                },
-            },
-        },
-    },
+                    example: AllSchemasWithExamples.AdminGetAllEvents.response.example
+                }
+            }
+        }
+    }
 };
 
 const adminCreateEventOpenApiOperation: ZodOpenApiOperationObject = {
@@ -66,9 +55,9 @@ const adminCreateEventOpenApiOperation: ZodOpenApiOperationObject = {
         content: {
             'application/json': {
                 schema: AllSchemasWithExamples.AdminCreateEvent.request.schema,
-                example: AllSchemasWithExamples.AdminCreateEvent.request.example,
-            },
-        },
+                example: AllSchemasWithExamples.AdminCreateEvent.request.example
+            }
+        }
     },
     responses: {
         '201': {
@@ -76,11 +65,11 @@ const adminCreateEventOpenApiOperation: ZodOpenApiOperationObject = {
             content: {
                 'application/json': {
                     schema: AllSchemasWithExamples.AdminCreateEvent.response.schema,
-                    example: AllSchemasWithExamples.AdminCreateEvent.response.example,
-                },
-            },
-        },
-    },
+                    example: AllSchemasWithExamples.AdminCreateEvent.response.example
+                }
+            }
+        }
+    }
 };
 
 const adminUpdateEventOpenApiOperation: ZodOpenApiOperationObject = {
@@ -94,8 +83,8 @@ const adminUpdateEventOpenApiOperation: ZodOpenApiOperationObject = {
             in: 'path',
             required: true,
             schema: { type: 'string' },
-            description: 'ID of the event to update',
-        },
+            description: 'ID of the event to update'
+        }
     ],
     requestBody: {
         description: 'Event data to update',
@@ -103,9 +92,9 @@ const adminUpdateEventOpenApiOperation: ZodOpenApiOperationObject = {
         content: {
             'application/json': {
                 schema: AllSchemasWithExamples.AdminUpdateEvent.request.schema,
-                example: AllSchemasWithExamples.AdminUpdateEvent.request.example,
-            },
-        },
+                example: AllSchemasWithExamples.AdminUpdateEvent.request.example
+            }
+        }
     },
     responses: {
         '200': {
@@ -113,14 +102,14 @@ const adminUpdateEventOpenApiOperation: ZodOpenApiOperationObject = {
             content: {
                 'application/json': {
                     schema: AllSchemasWithExamples.AdminUpdateEvent.response.schema,
-                    example: AllSchemasWithExamples.AdminUpdateEvent.response.example,
-                },
-            },
+                    example: AllSchemasWithExamples.AdminUpdateEvent.response.example
+                }
+            }
         },
         '400': {
-            description: 'No changes specified.',
-        },
-    },
+            description: 'No changes specified.'
+        }
+    }
 };
 
 const adminDeleteEventOpenApiOperation: ZodOpenApiOperationObject = {
@@ -134,8 +123,8 @@ const adminDeleteEventOpenApiOperation: ZodOpenApiOperationObject = {
             in: 'path',
             required: true,
             schema: { type: 'string' },
-            description: 'ID of the event to delete',
-        },
+            description: 'ID of the event to delete'
+        }
     ],
     responses: {
         '200': {
@@ -143,20 +132,20 @@ const adminDeleteEventOpenApiOperation: ZodOpenApiOperationObject = {
             content: {
                 'application/json': {
                     schema: AllSchemasWithExamples.AdminDeleteEvent.response.schema,
-                    example: AllSchemasWithExamples.AdminDeleteEvent.response.example,
-                },
-            },
-        },
-    },
+                    example: AllSchemasWithExamples.AdminDeleteEvent.response.example
+                }
+            }
+        }
+    }
 };
 
 export const adminEventsOpenApiPaths = {
     '/admin/events': {
         get: adminGetAllEventsOpenApiOperation,
-        post: adminCreateEventOpenApiOperation,
+        post: adminCreateEventOpenApiOperation
     },
     '/admin/events/{id}': {
         put: adminUpdateEventOpenApiOperation,
-        delete: adminDeleteEventOpenApiOperation,
-    },
+        delete: adminDeleteEventOpenApiOperation
+    }
 };

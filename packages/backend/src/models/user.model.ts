@@ -1,4 +1,4 @@
-import { prisma } from '../prisma';
+import { prisma } from "../prisma";
 
 export namespace UserModel {
     export const findByEmail = async (email: string) => {
@@ -9,11 +9,7 @@ export namespace UserModel {
         return await prisma.user.findUnique({ where: { id } });
     };
 
-    export const create = async (data: {
-        name: string;
-        email: string;
-        password: string;
-    }) => {
+    export const create = async (data: { name: string; email: string; password: string }) => {
         return await prisma.user.create({
             data,
         });
@@ -26,14 +22,11 @@ export namespace UserModel {
         return await prisma.user.findUnique({
             where: { id },
             include: {
-                events: true,
-            },
+                events: true
+            }
         });
     };
-    export const update = async (
-        id: string,
-        data: { name: string; email: string; password?: string },
-    ) => {
+    export const update = async (id: string, data: { name: string; email: string; password?: string }) => {
         return await prisma.user.update({
             where: { id },
             data,

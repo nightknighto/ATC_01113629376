@@ -1,8 +1,7 @@
-import type React from 'react';
-import { useState } from 'react';
-import { Alert, Button, Card, Container, Form } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { Container, Form, Button, Alert, Card } from 'react-bootstrap';
 
 const LoginPage: React.FC = () => {
     const { login } = useAuth();
@@ -37,18 +36,14 @@ const LoginPage: React.FC = () => {
             <Card className="shadow p-4 w-100" style={{ maxWidth: 400 }}>
                 <Card.Body>
                     <h2 className="mb-4 text-center text-primary">Login</h2>
-                    {error && (
-                        <Alert variant="danger" className="text-center">
-                            {error}
-                        </Alert>
-                    )}
+                    {error && <Alert variant="danger" className="text-center">{error}</Alert>}
                     <Form onSubmit={handleSubmit}>
                         <Form.Group className="mb-3" controlId="email">
                             <Form.Label>Email</Form.Label>
                             <Form.Control
                                 type="email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={e => setEmail(e.target.value)}
                                 required
                                 autoFocus
                             />
@@ -58,16 +53,11 @@ const LoginPage: React.FC = () => {
                             <Form.Control
                                 type="password"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={e => setPassword(e.target.value)}
                                 required
                             />
                         </Form.Group>
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            className="w-100"
-                            disabled={loading}
-                        >
+                        <Button type="submit" variant="primary" className="w-100" disabled={loading}>
                             {loading ? 'Logging in...' : 'Login'}
                         </Button>
                     </Form>

@@ -1,18 +1,14 @@
-import { LoginRequestSchema, RegisterRequestSchema } from '@events-platform/shared';
 import express from 'express';
-import type { ZodOpenApiOperationObject } from 'zod-openapi';
 import { AuthController } from '../controllers/auth.controller';
-import { Validators } from '../middleware/validators.middleware';
 import { AllSchemasWithExamples } from './openapi-example';
+import { ZodOpenApiOperationObject } from 'zod-openapi';
+import { Validators } from '../middleware/validators.middleware';
+import { LoginRequestSchema, RegisterRequestSchema } from '@events-platform/shared';
 
 const authRouter = express.Router();
 
 // Register a new user
-authRouter.post(
-    '/register',
-    Validators.validateBody(RegisterRequestSchema),
-    AuthController.register,
-);
+authRouter.post('/register', Validators.validateBody(RegisterRequestSchema), AuthController.register);
 
 // Login user
 authRouter.post('/login', Validators.validateBody(LoginRequestSchema), AuthController.login);
@@ -33,9 +29,9 @@ const registerOpenApiOperation: ZodOpenApiOperationObject = {
         content: {
             'application/json': {
                 schema: AllSchemasWithExamples.Register.request.schema,
-                example: AllSchemasWithExamples.Register.request.example,
-            },
-        },
+                example: AllSchemasWithExamples.Register.request.example
+            }
+        }
     },
     responses: {
         '201': {
@@ -43,14 +39,14 @@ const registerOpenApiOperation: ZodOpenApiOperationObject = {
             content: {
                 'application/json': {
                     schema: AllSchemasWithExamples.Register.response.schema,
-                    example: AllSchemasWithExamples.Register.response.example,
-                },
-            },
+                    example: AllSchemasWithExamples.Register.response.example
+                }
+            }
         },
         '400': {
-            description: 'Invalid input.',
-        },
-    },
+            description: 'Invalid input.'
+        }
+    }
 };
 
 const loginOpenApiOperation: ZodOpenApiOperationObject = {
@@ -64,9 +60,9 @@ const loginOpenApiOperation: ZodOpenApiOperationObject = {
         content: {
             'application/json': {
                 schema: AllSchemasWithExamples.Login.request.schema,
-                example: AllSchemasWithExamples.Login.request.example,
-            },
-        },
+                example: AllSchemasWithExamples.Login.request.example
+            }
+        }
     },
     responses: {
         '200': {
@@ -74,14 +70,14 @@ const loginOpenApiOperation: ZodOpenApiOperationObject = {
             content: {
                 'application/json': {
                     schema: AllSchemasWithExamples.Login.response.schema,
-                    example: AllSchemasWithExamples.Login.response.example,
-                },
-            },
+                    example: AllSchemasWithExamples.Login.response.example
+                }
+            }
         },
         '401': {
-            description: 'Invalid credentials.',
-        },
-    },
+            description: 'Invalid credentials.'
+        }
+    }
 };
 
 const getMeOpenApiOperation: ZodOpenApiOperationObject = {
@@ -95,26 +91,26 @@ const getMeOpenApiOperation: ZodOpenApiOperationObject = {
             content: {
                 'application/json': {
                     schema: AllSchemasWithExamples.GetMe.response.schema,
-                    example: AllSchemasWithExamples.GetMe.response.example,
-                },
-            },
+                    example: AllSchemasWithExamples.GetMe.response.example
+                }
+            }
         },
         '401': {
-            description: 'Unauthorized.',
-        },
-    },
+            description: 'Unauthorized.'
+        }
+    }
 };
 
 export const authOpenApiPaths = {
     '/auth/register': {
-        post: registerOpenApiOperation,
+        post: registerOpenApiOperation
     },
     '/auth/login': {
-        post: loginOpenApiOperation,
+        post: loginOpenApiOperation
     },
     '/auth/me': {
-        get: getMeOpenApiOperation,
-    },
+        get: getMeOpenApiOperation
+    }
 };
 
 export default authRouter;

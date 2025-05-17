@@ -1,16 +1,12 @@
-import type React from 'react';
-import { Button, Container } from 'react-bootstrap';
+import React from 'react';
+import { Container, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 // Custom LinkButton component to wrap Link and Button
-const LinkButton = ({
-    to,
-    children,
-    ...props
-}: { to: string; children: React.ReactNode } & React.ComponentProps<typeof Button>) => (
-    <Link to={to}>
-        <Button {...props}>{children}</Button>
-    </Link>
+const LinkButton = ({ to, children, ...props }: { to: string; children: React.ReactNode } & React.ComponentProps<typeof Button>) => (
+  <Link to={to}>
+    <Button {...props}>{children}</Button>
+  </Link>
 );
 
 const NotFoundPage: React.FC = () => (

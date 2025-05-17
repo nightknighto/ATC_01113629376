@@ -1,6 +1,7 @@
 import { createDocument } from 'zod-openapi';
-import { CONFIG } from '../config';
 import { openApiPaths } from '../routes/openapi-paths';
+import { AllSchemasWithExamples } from '../routes/openapi-example';
+import { CONFIG } from '../config';
 
 export const OASDocument = createDocument({
     openapi: '3.1.0',

@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import { CONFIG } from './config';
+import { PrismaClient } from "@prisma/client";
+import { CONFIG } from "./config";
 
 // Initialize Prisma client
 export const prisma = new PrismaClient({

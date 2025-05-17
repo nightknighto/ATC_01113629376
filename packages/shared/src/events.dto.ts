@@ -1,5 +1,6 @@
-import { z } from 'zod';
-import { paginateResponse } from './pagination.dto';
+import { z } from "zod";
+import { UserBaseSchema } from "./users.dto";
+import { paginateResponse } from "./pagination.dto";
 
 // Common Event fields
 export const EventBaseSchema = z.object({
@@ -21,7 +22,7 @@ const OrganizerExtensionSchema = z.object({
         id: z.string(),
         name: z.string(),
         email: z.string().email(),
-    }),
+    })
 });
 
 const EventWithDetailsSchema = EventBaseSchema.merge(OrganizerExtensionSchema).extend({
@@ -55,9 +56,7 @@ export const EventRegistrationSchema = z.object({
         id: z.string(),
         name: z.string(),
         email: z.string().email(),
-    }),
+    })
 });
-export const GetEventRegistrationsResponseSchema = paginateResponse(
-    z.array(EventRegistrationSchema),
-);
+export const GetEventRegistrationsResponseSchema = paginateResponse(z.array(EventRegistrationSchema));
 export type GetEventRegistrationsResponse = z.infer<typeof GetEventRegistrationsResponseSchema>;

@@ -1,11 +1,7 @@
-import { prisma } from '../prisma';
+import { prisma } from "../prisma";
 
 export namespace EventModel {
-    export const findAllWithDetails = async (options?: {
-        skip?: number;
-        take?: number;
-        search?: string;
-    }) => {
+    export const findAllWithDetails = async (options?: { skip?: number; take?: number; search?: string }) => {
         return await prisma.event.findMany({
             skip: options?.skip,
             take: options?.take,
@@ -21,8 +17,8 @@ export namespace EventModel {
                     },
                 },
                 _count: {
-                    select: { registrations: true },
-                },
+                    select: { registrations: true }
+                }
             },
         });
     };
@@ -39,22 +35,13 @@ export namespace EventModel {
                     },
                 },
                 _count: {
-                    select: { registrations: true },
-                },
+                    select: { registrations: true }
+                }
             },
         });
     };
 
-    export const createWithOrganizer = async (data: {
-        name: string;
-        description: string;
-        category: string;
-        date: Date;
-        venue: string;
-        price: number;
-        image: string;
-        organizerId: string;
-    }) => {
+    export const createWithOrganizer = async (data: { name: string; description: string; category: string; date: Date; venue: string; price: number; image: string; organizerId: string }) => {
         return await prisma.event.create({
             data,
             include: {
@@ -69,18 +56,7 @@ export namespace EventModel {
         });
     };
 
-    export const updateWithOrganizer = async (
-        id: string,
-        data: {
-            name?: string;
-            description?: string;
-            category?: string;
-            date?: Date;
-            venue?: string;
-            price?: number;
-            image?: string;
-        },
-    ) => {
+    export const updateWithOrganizer = async (id: string, data: { name?: string; description?: string; category?: string; date?: Date; venue?: string; price?: number; image?: string }) => {
         return await prisma.event.update({
             where: { id },
             data,
@@ -102,7 +78,7 @@ export namespace EventModel {
 
     export const countAll = async (search?: string) => {
         return await prisma.event.count({
-            where: search ? { name: { contains: search, mode: 'insensitive' } } : undefined,
+            where: search ? { name: { contains: search, mode: 'insensitive' } } : undefined
         });
     };
 }
